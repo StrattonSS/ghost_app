@@ -1,0 +1,50 @@
+name: ghost_app
+description: A mobile app for geolocated haunting observation and survey tracking.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  video_player: ^2.7.0
+  audioplayers: ^5.2.1
+  cloud_firestore: ^4.17.0
+  firebase_auth: ^4.17.4
+  firebase_core: ^2.30.0
+  google_maps_flutter: ^2.5.0
+  url_launcher: ^6.2.5
+  geolocator: ^10.1.0
+  sensors_plus: ^3.0.3
+  camera: ^0.10.5+5
+  path_provider: ^2.1.1
+  shared_preferences: ^2.2.2
+  image_picker: ^1.0.7
+  just_audio: ^0.9.36
+  lucide_icons: 0.257.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/splash/GHOST_animation.mp4
+    - assets/splash/startup1.mp3
+    - assets/splash/startup2.mp3
+    - assets/map_style_dark.json
+    - assets/sounds/static.wav
+   
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.gif"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/icon.png"

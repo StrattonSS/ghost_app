@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "869905958615",
+    "project_id": "ghost-app-61105",
+    "storage_bucket": "ghost-app-61105.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:869905958615:android:fc3974681c23534fa0d292",
+        "android_client_info": {
+          "package_name": "com.ghostapp.hunting"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGsugZM9koD4gC0X5mfQTsXCTqkegigfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
