@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'terminal_theme.dart';
 
 class UVSensorPage extends StatefulWidget {
   const UVSensorPage({super.key});
@@ -102,11 +103,14 @@ class _UvSensorPageState extends State<UVSensorPage> {
     }
   }
 
-  void _logEvidence(BuildContext context) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Evidence logged!')),
-    );
+  void _logEvidence(BuildContext context) {
     HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Evidence logged!"),
+        backgroundColor: TerminalColors.background,
+      ),
+    );
   }
 
   Widget _buildBackButton(BuildContext context) {
@@ -122,11 +126,11 @@ class _UvSensorPageState extends State<UVSensorPage> {
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.greenAccent, width: 2),
+                border: Border.all(color: TerminalColors.green, width: 2),
                 color: Colors.black.withOpacity(0.5),
               ),
               padding: const EdgeInsets.all(8),
-              child: const Icon(Icons.arrow_back, color: Colors.greenAccent),
+              child: const Icon(Icons.arrow_back, color: TerminalColors.green),
             ),
           ),
         ),
@@ -146,7 +150,7 @@ class _UvSensorPageState extends State<UVSensorPage> {
     return GestureDetector(
       onTap: () => _onScanTap(context),
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: TerminalColors.background,
         body: FutureBuilder<void>(
           future: _initializeControllerFuture,
           builder: (context, snapshot) {
@@ -154,9 +158,7 @@ class _UvSensorPageState extends State<UVSensorPage> {
               return Stack(
                 children: [
                   CameraPreview(_controller),
-                  Container(
-                    color: Colors.deepPurple.withOpacity(0.4),
-                  ),
+                  Container(color: Colors.deepPurple.withOpacity(0.3)),
                   _buildBackButton(context),
                   if (isNearHotspot &&
                       revealedImage != null &&
@@ -174,8 +176,8 @@ class _UvSensorPageState extends State<UVSensorPage> {
                   if (isNearHotspot && revealedImage == null)
                     const Center(
                       child: Text(
-                        "Tap to scan with UV light...",
-                        style: TextStyle(color: Colors.white70, fontSize: 20),
+                        ">> Tap to scan with UV light...",
+                        style: TerminalTextStyles.muted,
                       ),
                     ),
                   if (isNearHotspot && revealedImage != null)
@@ -185,12 +187,16 @@ class _UvSensorPageState extends State<UVSensorPage> {
                       right: 0,
                       child: Center(
                         child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: Colors.greenAccent,
-                            side: const BorderSide(color: Colors.greenAccent),
-                          ),
                           onPressed: () => _logEvidence(context),
+                          style: TerminalButtonStyles.Elevated.copyWith(
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.transparent),
+                            foregroundColor:
+                                MaterialStateProperty.all(TerminalColors.green),
+                            side: MaterialStateProperty.all(
+                              const BorderSide(color: TerminalColors.green),
+                            ),
+                          ),
                           icon: const Icon(Icons.add),
                           label: const Text("Log Evidence"),
                         ),
@@ -199,14 +205,16 @@ class _UvSensorPageState extends State<UVSensorPage> {
                   if (!isNearHotspot)
                     const Center(
                       child: Text(
-                        "No paranormal evidence nearby...",
-                        style: TextStyle(color: Colors.white70, fontSize: 18),
+                        ">> No paranormal evidence nearby...",
+                        style: TerminalTextStyles.muted,
                       ),
                     ),
                 ],
               );
             } else {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: CircularProgressIndicator(color: TerminalColors.green),
+              );
             }
           },
         ),

@@ -5,6 +5,7 @@ import '../pages/spirit_box_page.dart';
 import '../pages/parabolic_mic_page.dart';
 import '../pages/ghost_camera_page.dart';
 import '../pages/tool_tutorial_page.dart';
+import 'terminal_theme.dart';
 
 class ToolsPage extends StatelessWidget {
   const ToolsPage({Key? key}) : super(key: key);
@@ -15,30 +16,19 @@ class ToolsPage extends StatelessWidget {
     required String description,
     required VoidCallback onTap,
   }) {
-    return Card(
-      color: Colors.black87,
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        border: Border.all(color: TerminalColors.green),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         onTap: onTap,
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.greenAccent,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(
-          description,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 14,
-          ),
-        ),
+        title: Text(title, style: TerminalTextStyles.heading),
+        subtitle: Text(description, style: TerminalTextStyles.muted),
         trailing:
-            const Icon(Icons.arrow_forward_ios, color: Colors.greenAccent),
+            const Icon(Icons.arrow_forward_ios, color: TerminalColors.green),
       ),
     );
   }
@@ -46,11 +36,12 @@ class ToolsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        title: const Text('Ghost Tools'),
-        backgroundColor: Colors.black,
+        backgroundColor: TerminalColors.background,
+        title:
+            const Text(">> TOOLS_SYS.TXT", style: TerminalTextStyles.heading),
       ),
-      backgroundColor: Colors.black,
       body: ListView(
         children: [
           buildToolTile(

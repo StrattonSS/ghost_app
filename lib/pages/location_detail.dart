@@ -1,169 +1,140 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class LocationDetailPage extends StatefulWidget {
   final String locationId;
 
-  const LocationDetailPage({Key? key, required this.locationId})
-      : super(key: key);
+  const LocationDetailPage({super.key, required this.locationId});
 
   @override
-  _LocationDetailPageState createState() => _LocationDetailPageState();
+  State<LocationDetailPage> createState() => _LocationDetailPageState();
 }
 
 class _LocationDetailPageState extends State<LocationDetailPage> {
-  DocumentSnapshot? locationData;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Map<String, dynamic>? locationData;
   bool isLoading = true;
-  late GoogleMapController mapController;
-  LatLng? locationCoords;
-  String? mapStyle;
+  bool isFavorited = false;
+
+  final Color terminalGreen = const Color(0xFF00FF00);
 
   @override
   void initState() {
     super.initState();
-    fetchLocationDetails();
-    loadMapStyle();
+    loadLocation();
   }
 
-  Future<void> loadMapStyle() async {
-    mapStyle = await rootBundle.loadString('assets/map_style_dark.json');
-  }
+  Future<void> loadLocation() async {
+    try {
+      final doc =
+          await _firestore.collection('locations').doc(widget.locationId).get();
+      final user = _auth.currentUser;
+      if (doc.exists && user != null) {
+        final userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+        final favs = List<Map<String, dynamic>>.from(
+            userDoc.data()?['favoritedLocations'] ?? []);
+        final alreadyFavorited =
+            favs.any((fav) => fav['id'] == widget.locationId);
 
-  Future<void> fetchLocationDetails() async {
-    final doc = await FirebaseFirestore.instance
-        .collection('locations')
-        .doc(widget.locationId)
-        .get();
-    if (doc.exists) {
-      final data = doc.data() as Map<String, dynamic>;
-      if (data['coordinates'] != null && data['coordinates'].contains(';')) {
-        final parts = data['coordinates'].split(';');
-        final lat = double.tryParse(parts[0].trim());
-        final lng = double.tryParse(parts[1].trim());
-        if (lat != null && lng != null) {
-          locationCoords = LatLng(lat, lng);
-        }
+        setState(() {
+          locationData = doc.data();
+          isFavorited = alreadyFavorited;
+          isLoading = false;
+        });
       }
-      setState(() {
-        locationData = doc;
-        isLoading = false;
-      });
+    } catch (e) {
+      print('Error loading location: $e');
     }
   }
 
-  Future<void> _openMap() async {
-    if (locationCoords == null) return;
-    final lat = locationCoords!.latitude;
-    final lng = locationCoords!.longitude;
-    final uri = Uri.parse(
-        "https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving");
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Could not open map'),
-      ));
+  Future<void> addToFavorites() async {
+    final user = _auth.currentUser;
+    if (user == null || locationData == null) return;
+
+    final userRef = _firestore.collection('users').doc(user.uid);
+    final newFavorite = {
+      'id': widget.locationId,
+      'name': locationData!['name'],
+      'city': locationData!['city'],
+      'state': locationData!['state'],
+      'imageUrl': locationData!['imageUrl'] ?? '',
+    };
+
+    try {
+      await userRef.update({
+        'favoritedLocations': FieldValue.arrayUnion([newFavorite])
+      });
+
+      setState(() {
+        isFavorited = true;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.black,
+          content: Text(
+            '>> Added to favorites!',
+            style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Failed to favorite: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final terminalText = const TextStyle(
-      color: Colors.greenAccent,
-      fontFamily: 'Courier',
-      fontSize: 18,
-    );
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.greenAccent),
         backgroundColor: Colors.black,
-        title: const Text("Location Details",
-            style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier')),
+        title: Text(
+          locationData?['name'] ?? 'Loading...',
+          style: TextStyle(
+            color: terminalGreen,
+            fontFamily: 'Courier',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
+      floatingActionButton: isFavorited
+          ? null
+          : FloatingActionButton.extended(
+              backgroundColor: Colors.black,
+              icon: Icon(Icons.favorite_border, color: terminalGreen),
+              label: Text(
+                "Add to Favorites",
+                style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
+              ),
+              onPressed: addToFavorites,
+            ),
       body: isLoading
-          ? Center(
-              child: Text("> Loading details for ${widget.locationId}...",
-                  style: terminalText))
-          : locationData == null
-              ? Center(
-                  child: Text("> Location not found.", style: terminalText))
-              : Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SingleChildScrollView(
-                    child: DefaultTextStyle(
-                      style: terminalText,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("> Name: ${locationData!['name'] ?? 'N/A'}"),
-                          const SizedBox(height: 10),
-                          Text("> State: ${locationData!['state'] ?? 'N/A'}"),
-                          const SizedBox(height: 10),
-                          Text("> City: ${locationData!['city'] ?? 'N/A'}"),
-                          const SizedBox(height: 10),
-                          Text("> Type: ${locationData!['type'] ?? 'N/A'}"),
-                          const SizedBox(height: 10),
-                          Text(
-                              "> Activity: ${locationData!['activity'] ?? 'N/A'}"),
-                          const SizedBox(height: 10),
-                          Text("> Description:"),
-                          const SizedBox(height: 6),
-                          Text(locationData!['description'] ?? 'N/A'),
-                          const SizedBox(height: 20),
-                          if (locationCoords != null)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("> Location on Map:"),
-                                const SizedBox(height: 10),
-                                Container(
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Colors.greenAccent)),
-                                  child: GestureDetector(
-                                    onTap: _openMap,
-                                    child: AbsorbPointer(
-                                      child: GoogleMap(
-                                        initialCameraPosition: CameraPosition(
-                                          target: locationCoords!,
-                                          zoom: 14.0,
-                                        ),
-                                        markers: {
-                                          Marker(
-                                            markerId: MarkerId("location"),
-                                            position: locationCoords!,
-                                            infoWindow: InfoWindow(
-                                              title: locationData!['name'],
-                                            ),
-                                          )
-                                        },
-                                        onMapCreated: (controller) {
-                                          mapController = controller;
-                                          if (mapStyle != null) {
-                                            mapController.setMapStyle(mapStyle);
-                                          }
-                                        },
-                                        zoomControlsEnabled: false,
-                                        myLocationButtonEnabled: false,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text("> Tap map for directions"),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
+          ? Center(child: CircularProgressIndicator(color: terminalGreen))
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: DefaultTextStyle(
+                style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("> City: ${locationData!['city']}"),
+                    Text("> State: ${locationData!['state']}"),
+                    if (locationData!['type'] != null)
+                      Text("> Type: ${locationData!['type']}"),
+                    if (locationData!['activity'] != null)
+                      Text("> Activity: ${locationData!['activity']}"),
+                    const SizedBox(height: 20),
+                    if (locationData!['description'] != null)
+                      Text(locationData!['description']),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }

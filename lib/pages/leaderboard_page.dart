@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'terminal_theme.dart';
 
 class LeaderboardPage extends StatefulWidget {
   const LeaderboardPage({super.key});
@@ -40,13 +41,14 @@ class _LeaderboardPageState extends State<LeaderboardPage>
       future: fetchLeaderboard(field),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+              child: CircularProgressIndicator(color: TerminalColors.green));
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(
-            child: Text("No leaderboard data yet.",
-                style: TextStyle(color: Colors.white70)),
+            child: Text(">> No leaderboard data yet.",
+                style: TerminalTextStyles.muted),
           );
         }
 
@@ -61,13 +63,24 @@ class _LeaderboardPageState extends State<LeaderboardPage>
             final entries = user['entriesLogged'] ?? 0;
             final locations = user['locationsVisited'] ?? 0;
 
-            return ListTile(
-              leading: CircleAvatar(child: Text('#${index + 1}')),
-              title: Text(
-                  username, style: const TextStyle(color: Colors.white)),
-              subtitle: Text(
-                "$coins ghost coins • $entries evidence • $locations locations",
-                style: const TextStyle(color: Colors.white70),
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(color: TerminalColors.green),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.black,
+                  foregroundColor: TerminalColors.green,
+                  child: Text('#${index + 1}'),
+                ),
+                title: Text(username, style: TerminalTextStyles.heading),
+                subtitle: Text(
+                  "$coins ghost coins • $entries evidence • $locations locations",
+                  style: TerminalTextStyles.muted,
+                ),
               ),
             );
           },
@@ -79,11 +92,17 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        title: const Text("Leaderboard"),
+        backgroundColor: TerminalColors.background,
+        title: const Text(">> LEADERBOARD_SYS.TXT"),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
+          labelColor: TerminalColors.green,
+          unselectedLabelColor: TerminalColors.faded,
+          indicatorColor: TerminalColors.green,
+          labelStyle: TerminalTextStyles.body,
           tabs: _categories.map((cat) => Tab(text: cat["label"])).toList(),
         ),
       ),

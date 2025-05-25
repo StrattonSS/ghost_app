@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'terminal_theme.dart';
 
 class SpiritBoxPage extends StatefulWidget {
   const SpiritBoxPage({Key? key}) : super(key: key);
@@ -57,11 +58,7 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
         _audioPlayer.stop();
         await _audioPlayer.setAsset('assets/audio/voice_response.mp3');
         await _audioPlayer.play();
-
-        setState(() {
-          _canLog = true;
-        });
-
+        setState(() => _canLog = true);
         await Future.delayed(const Duration(seconds: 2));
         _responseDetected = false;
         _audioPlayer.stop();
@@ -77,11 +74,12 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
   void _logEvidence() {
     HapticFeedback.heavyImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Spirit response logged!')),
+      const SnackBar(
+        content: Text('Spirit response logged!'),
+        backgroundColor: TerminalColors.background,
+      ),
     );
-    setState(() {
-      _canLog = false;
-    });
+    setState(() => _canLog = false);
   }
 
   @override
@@ -101,10 +99,10 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.5),
-            border: Border.all(color: Colors.greenAccent),
+            border: Border.all(color: TerminalColors.green),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.arrow_back, color: Colors.greenAccent),
+          child: const Icon(Icons.arrow_back, color: TerminalColors.green),
         ),
       ),
     );
@@ -113,7 +111,7 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       body: Stack(
         children: [
           const AnimatedBackground(),
@@ -123,12 +121,7 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
               const Center(
                 child: Text(
                   'SPIRIT BOX',
-                  style: TextStyle(
-                    color: Colors.greenAccent,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
+                  style: TerminalTextStyles.heading,
                 ),
               ),
               const SizedBox(height: 20),
@@ -138,17 +131,13 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.black87,
-                  border: Border.all(color: Colors.greenAccent),
+                  border: Border.all(color: TerminalColors.green),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
                   child: Text(
                     _currentFreqLabel,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      color: Colors.greenAccent,
-                      fontFamily: 'Courier',
-                    ),
+                    style: TerminalTextStyles.body.copyWith(fontSize: 26),
                   ),
                 ),
               ),
@@ -158,10 +147,10 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
               Icon(
                 LucideIcons.ghost,
                 size: 60,
-                color: _responseDetected ? Colors.greenAccent : Colors.grey,
+                color: _responseDetected ? TerminalColors.green : Colors.grey,
                 shadows: [
                   if (_responseDetected)
-                    const Shadow(color: Colors.green, blurRadius: 20),
+                    const Shadow(color: TerminalColors.green, blurRadius: 20),
                 ],
               ),
               const SizedBox(height: 20),
@@ -171,13 +160,14 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
                 label: const Text("Log Response"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.greenAccent,
-                  side: const BorderSide(color: Colors.greenAccent),
+                  foregroundColor: TerminalColors.green,
+                  side: const BorderSide(color: TerminalColors.green),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  textStyle: TerminalTextStyles.body,
                 ),
               ),
             ],
@@ -236,7 +226,7 @@ class SpiritBoxPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.greenAccent.withOpacity(0.05)
+      ..color = TerminalColors.green.withOpacity(0.05)
       ..strokeWidth = 1;
 
     for (double i = 0; i < size.width; i += 20) {

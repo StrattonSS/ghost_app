@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:ghost_app/pages/splash_screen.dart';
-import 'package:ghost_app/pages/home_page.dart';
+import 'firebase_options.dart';
+import 'pages/terminal_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const GhostApp());
 }
 
@@ -16,11 +20,24 @@ class GhostApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const SplashScreen(),
-        '/home': (context) => HomePage(),
-      },
+      title: 'G.H.O.S.T.',
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: TerminalColors.background,
+        fontFamily: 'Courier',
+        appBarTheme: const AppBarTheme(
+          backgroundColor: TerminalColors.background,
+          foregroundColor: TerminalColors.green,
+          titleTextStyle: TerminalTextStyles.heading,
+          iconTheme: IconThemeData(color: TerminalColors.green),
+        ),
+        iconTheme: const IconThemeData(color: TerminalColors.green),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: TerminalColors.background,
+          foregroundColor: TerminalColors.green,
+        ),
+      ),
+      home: const SplashScreen(),
     );
   }
 }

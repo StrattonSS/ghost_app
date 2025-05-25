@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'location_detail.dart';
+import 'terminal_theme.dart'; // ✅ Importing shared terminal style
 
 class Location {
   final String id;
@@ -68,12 +69,8 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       allLocations = locations;
-      states = locations.map((e) => e.state).toSet().cast<String>();
-      types = locations
-          .map((e) => e.type)
-          .where((e) => e != null && e.isNotEmpty)
-          .cast<String>()
-          .toSet();
+      states = locations.map((e) => e.state).toSet();
+      types = locations.map((e) => e.type).whereType<String>().toSet();
       isLoading = false;
     });
   }
@@ -89,7 +86,6 @@ class _HomePageState extends State<HomePage> {
               false) ||
           (loc.activity?.toLowerCase().contains(searchQuery.toLowerCase()) ??
               false);
-
       return matchesState && matchesCity && matchesType && matchesSearch;
     }).toList();
   }
@@ -106,11 +102,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final terminalText = const TextStyle(
-      color: Colors.greenAccent,
-      fontFamily: 'Courier',
-      fontSize: 18,
-    );
+    final terminalText = TerminalTextStyles.body.copyWith(fontSize: 18);
 
     final availableCities = selectedState == 'Any'
         ? allLocations.map((loc) => loc.city).toSet().toList()
@@ -121,12 +113,12 @@ class _HomePageState extends State<HomePage> {
             .toList();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: isLoading
-            ? Center(
-                child: CircularProgressIndicator(color: Colors.greenAccent))
+            ? const Center(
+                child: CircularProgressIndicator(color: TerminalColors.green))
             : DefaultTextStyle(
                 style: terminalText,
                 child: Column(
@@ -145,18 +137,18 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: const EdgeInsets.only(bottom: 24),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.greenAccent),
+                        border: Border.all(color: TerminalColors.green),
                         borderRadius: BorderRadius.circular(5),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: TextField(
                         controller: searchController,
                         style: terminalText,
-                        cursorColor: Colors.greenAccent,
+                        cursorColor: TerminalColors.green,
                         decoration: InputDecoration(
                           hintText: 'Type, name, or activity...',
                           hintStyle: TextStyle(
-                              color: Colors.greenAccent.withOpacity(0.5)),
+                              color: TerminalColors.green.withOpacity(0.5)),
                           border: InputBorder.none,
                         ),
                         onChanged: (value) =>
@@ -165,87 +157,31 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Text("> Filter by Type:"),
                     const SizedBox(height: 6),
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 24),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.greenAccent),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: DropdownButton<String>(
-                        dropdownColor: Colors.black,
-                        isExpanded: true,
-                        value: selectedType,
-                        underline: Container(),
-                        items: ['Any', ...types].map((type) {
-                          return DropdownMenuItem(
-                            value: type,
-                            child: Text(type, style: terminalText),
-                          );
-                        }).toList(),
-                        onChanged: (value) =>
-                            setState(() => selectedType = value!),
-                      ),
-                    ),
+                    _buildDropdown(selectedType, types, (value) {
+                      setState(() => selectedType = value);
+                    }),
                     Text("> Select State:"),
                     const SizedBox(height: 6),
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 24),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.greenAccent),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: DropdownButton<String>(
-                        dropdownColor: Colors.black,
-                        isExpanded: true,
-                        value: selectedState,
-                        underline: Container(),
-                        items: ['Any', ...states].map((state) {
-                          return DropdownMenuItem(
-                            value: state,
-                            child: Text(state, style: terminalText),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedState = value!;
-                            selectedCity = 'Any';
-                          });
-                        },
-                      ),
-                    ),
+                    _buildDropdown(selectedState, states, (value) {
+                      setState(() {
+                        selectedState = value;
+                        selectedCity = 'Any';
+                      });
+                    }),
                     Text("> Select City:"),
                     const SizedBox(height: 6),
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 24),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.greenAccent),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: DropdownButton<String>(
-                        dropdownColor: Colors.black,
-                        isExpanded: true,
-                        value: selectedCity,
-                        underline: Container(),
-                        items: ['Any', ...availableCities].map((city) {
-                          return DropdownMenuItem(
-                            value: city,
-                            child: Text(city, style: terminalText),
-                          );
-                        }).toList(),
-                        onChanged: (value) =>
-                            setState(() => selectedCity = value!),
-                      ),
-                    ),
+                    _buildDropdown(selectedCity, availableCities.toSet(),
+                        (value) {
+                      setState(() => selectedCity = value);
+                    }),
                     Text("> Matching Locations:"),
                     const SizedBox(height: 10),
                     Expanded(
                       child: filteredLocations.isEmpty
-                          ? Center(
+                          ? const Center(
                               child: Text("> No matching results found.",
-                                  style: terminalText))
+                                  style: TerminalTextStyles.body),
+                            )
                           : GridView.count(
                               crossAxisCount: 2,
                               crossAxisSpacing: 12,
@@ -264,8 +200,8 @@ class _HomePageState extends State<HomePage> {
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      border:
-                                          Border.all(color: Colors.greenAccent),
+                                      border: Border.all(
+                                          color: TerminalColors.green),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     padding: const EdgeInsets.all(8),
@@ -278,8 +214,9 @@ class _HomePageState extends State<HomePage> {
                                                   loc.imageUrl!.isNotEmpty
                                               ? Image.network(loc.imageUrl!,
                                                   fit: BoxFit.cover)
-                                              : Icon(Icons.image_not_supported,
-                                                  color: Colors.greenAccent,
+                                              : const Icon(
+                                                  Icons.image_not_supported,
+                                                  color: TerminalColors.green,
                                                   size: 40),
                                         ),
                                         const SizedBox(height: 8),
@@ -299,6 +236,32 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown(
+      String selectedValue, Set<String> options, Function(String) onChanged) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        border: Border.all(color: TerminalColors.green),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: DropdownButton<String>(
+        dropdownColor: TerminalColors.background,
+        isExpanded: true,
+        value: selectedValue,
+        underline: Container(),
+        items: ['Any', ...options].map((value) {
+          return DropdownMenuItem(
+            value: value,
+            child: Text(value,
+                style: TerminalTextStyles.body.copyWith(fontSize: 18)),
+          );
+        }).toList(),
+        onChanged: (value) => onChanged(value!),
       ),
     );
   }

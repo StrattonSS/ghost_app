@@ -25,6 +25,7 @@ dependencies:
   image_picker: ^1.0.7
   just_audio: ^0.9.36
   lucide_icons: 0.257.0
+  flutterfire_cli: ^1.2.0
 
 dev_dependencies:
   flutter_test:

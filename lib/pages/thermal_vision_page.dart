@@ -6,6 +6,7 @@ import 'package:camera/camera.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'terminal_theme.dart';
 
 class ThermalVisionPage extends StatefulWidget {
   const ThermalVisionPage({super.key});
@@ -43,7 +44,6 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
   void _initCamera() async {
     final cameras = await availableCameras();
     final camera = cameras.first;
-
     _controller = CameraController(camera, ResolutionPreset.medium);
     _initializeControllerFuture = _controller.initialize();
     setState(() {});
@@ -149,14 +149,18 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
   void _logEvidence(String evidenceType) {
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Evidence logged: $evidenceType')),
+      SnackBar(
+        content: Text('Evidence logged: $evidenceType'),
+        backgroundColor: TerminalColors.background,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
@@ -193,8 +197,8 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
                   right: 0,
                   child: Center(
                     child: Text(
-                      "Thermal Vision Active",
-                      style: TextStyle(color: Colors.white70, fontSize: 18),
+                      ">> Thermal Vision Active",
+                      style: TerminalTextStyles.muted,
                     ),
                   ),
                 ),
@@ -211,9 +215,11 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
                               .last
                               .replaceAll('.png', ''),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          foregroundColor: Colors.white,
+                        style: TerminalButtonStyles.Elevated.copyWith(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.deepPurple),
+                          foregroundColor:
+                              MaterialStateProperty.all(Colors.white),
                         ),
                         child: const Text("Log Thermal Evidence"),
                       ),
@@ -222,7 +228,9 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
               ],
             );
           } else {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: TerminalColors.green),
+            );
           }
         },
       ),

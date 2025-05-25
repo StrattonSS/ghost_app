@@ -6,6 +6,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'terminal_theme.dart';
 
 class ParabolicMicPage extends StatefulWidget {
   const ParabolicMicPage({super.key});
@@ -97,9 +98,7 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
   void _handleAudioLogic() async {
     if (_distanceToHotspot == null ||
         _bearingToHotspot == null ||
-        _heading == null) {
-      return;
-    }
+        _heading == null) return;
 
     double diff = (_bearingToHotspot! - _heading!).abs();
     if (diff > 180) diff = 360 - diff;
@@ -138,18 +137,21 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
   void _logEvidence(String type) {
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Evidence logged!')),
+      const SnackBar(
+        content: Text('Evidence logged!'),
+        backgroundColor: TerminalColors.background,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        title: const Text("Parabolic Microphone"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.greenAccent,
+        title: const Text(">> PARABOLIC_MIC_SYS.TXT"),
+        backgroundColor: TerminalColors.background,
+        foregroundColor: TerminalColors.green,
       ),
       body: Center(
         child: Stack(
@@ -166,7 +168,7 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
               bottom: 100,
               child: Text(
                 "Rotate device to find the signal...",
-                style: TextStyle(color: Colors.white70),
+                style: TerminalTextStyles.muted,
               ),
             ),
             Positioned(
@@ -177,8 +179,11 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
                 child: ElevatedButton(
                   onPressed: _isPlayingAudio ? () => _logEvidence('evp') : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _isPlayingAudio ? Colors.blue : Colors.grey,
+                    backgroundColor: _isPlayingAudio
+                        ? TerminalColors.green
+                        : TerminalColors.green.withOpacity(0.3),
+                    foregroundColor: Colors.black,
+                    textStyle: TerminalTextStyles.body,
                   ),
                   child: const Text("Log Evidence"),
                 ),
@@ -199,7 +204,7 @@ class RadarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.greenAccent.withOpacity(0.2)
+      ..color = TerminalColors.green.withOpacity(0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -211,7 +216,7 @@ class RadarPainter extends CustomPainter {
     }
 
     final sweepPaint = Paint()
-      ..color = Colors.greenAccent.withOpacity(0.5)
+      ..color = TerminalColors.green.withOpacity(0.5)
       ..style = PaintingStyle.fill;
 
     final sweepAngle = 0.3;

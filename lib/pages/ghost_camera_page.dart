@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'terminal_theme.dart';
 
 class GhostCameraPage extends StatefulWidget {
   const GhostCameraPage({super.key});
@@ -40,11 +41,7 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
     final cameras = await availableCameras();
     final camera = cameras.first;
 
-    _controller = CameraController(
-      camera,
-      ResolutionPreset.medium,
-    );
-
+    _controller = CameraController(camera, ResolutionPreset.medium);
     _initializeControllerFuture = _controller.initialize();
     setState(() {});
   }
@@ -112,7 +109,7 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
@@ -134,7 +131,7 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
                   ),
                 Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.greenAccent, width: 2),
+                    border: Border.all(color: TerminalColors.green, width: 2),
                   ),
                 ),
                 Positioned(
@@ -165,6 +162,7 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                         foregroundColor: Colors.white,
+                        textStyle: TerminalTextStyles.body,
                       ),
                       onPressed: _takePicture,
                       icon: const Icon(Icons.camera_alt),
@@ -188,6 +186,7 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white24,
                           foregroundColor: Colors.white,
+                          textStyle: TerminalTextStyles.body,
                         ),
                         child: const Text("Reset View"),
                       ),
@@ -196,7 +195,9 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
               ],
             );
           } else {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: TerminalColors.green),
+            );
           }
         },
       ),

@@ -5,7 +5,8 @@ class ToolUnlockService {
 
   ToolUnlockService._internal();
 
-  /// Unified logging method
+  /// Logs an instance of evidence for the given type and optionally tool/location.
+  /// This increments a usage counter and sets a flag to allow coin claiming.
   Future<void> logEvidence(
     String evidenceType, {
     String? toolName,
@@ -13,21 +14,22 @@ class ToolUnlockService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Build key dynamically
-    final keyParts = [
-      if (toolName != null) 'evidence_${toolName}_$evidenceType',
-      if (toolName == null) 'evidence_$evidenceType',
-    ];
+    // Construct keys
+    final key = toolName != null
+        ? 'evidence_${toolName}_$evidenceType'
+        : 'evidence_$evidenceType';
 
-    final key = keyParts.first;
     final coinKey = key.replaceFirst('evidence', 'coins');
 
-    int count = prefs.getInt(key) ?? 0;
+    // Increment evidence count
+    final count = prefs.getInt(key) ?? 0;
     await prefs.setInt(key, count + 1);
+
+    // Set coin earned flag
     await prefs.setBool(coinKey, true);
 
-    // Optional debug print
-    print('Logged evidence: $key'
-        '${locationName != null ? ' @ $locationName' : ''}');
+    // Debug print
+    print(
+        'Logged evidence: $key${locationName != null ? ' @ $locationName' : ''}');
   }
 }

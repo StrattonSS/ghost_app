@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'terminal_theme.dart'; // ✅ Corrected import path
 
 class JournalPage extends StatefulWidget {
   const JournalPage({super.key});
@@ -16,8 +17,6 @@ class _JournalPageState extends State<JournalPage>
   List<Map<String, dynamic>> favorites = [];
   List<Map<String, dynamic>> visited = [];
 
-  final Color terminalGreen = const Color(0xFF00FF00);
-
   @override
   void initState() {
     super.initState();
@@ -27,7 +26,7 @@ class _JournalPageState extends State<JournalPage>
 
   Future<void> _loadUserJournal() async {
     try {
-      final userId = 'testUser123';
+      final userId = 'testUser123'; // Replace with FirebaseAuth.uid later
       final userDoc = await _firestore.collection('users').doc(userId).get();
       final data = userDoc.data();
 
@@ -49,23 +48,16 @@ class _JournalPageState extends State<JournalPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text(
-          '>> JOURNAL_LOG.TXT',
-          style: TextStyle(
-            color: terminalGreen,
-            fontFamily: 'Courier',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        backgroundColor: TerminalColors.background,
+        title: const Text('>> JOURNAL_LOG.TXT'),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: terminalGreen,
-          unselectedLabelColor: terminalGreen.withOpacity(0.5),
-          indicatorColor: terminalGreen,
-          labelStyle: const TextStyle(fontFamily: 'Courier'),
+          labelColor: TerminalColors.green,
+          unselectedLabelColor: TerminalColors.faded,
+          indicatorColor: TerminalColors.green,
+          labelStyle: TerminalTextStyles.body,
           tabs: const [
             Tab(text: 'Favorites'),
             Tab(text: 'Visited'),
@@ -84,10 +76,10 @@ class _JournalPageState extends State<JournalPage>
 
   Widget _buildFavoritesTab() {
     if (favorites.isEmpty) {
-      return Center(
+      return const Center(
         child: Text(
           '>> No favorited locations found.',
-          style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
+          style: TerminalTextStyles.body,
         ),
       );
     }
@@ -100,7 +92,7 @@ class _JournalPageState extends State<JournalPage>
           title: location['name'],
           subtitle: '${location['city']}, ${location['state']}',
           trailing: '[★ FAVORITED]',
-          trailingColor: Colors.redAccent,
+          trailingColor: TerminalColors.red,
         );
       },
     );
@@ -108,10 +100,10 @@ class _JournalPageState extends State<JournalPage>
 
   Widget _buildVisitedTab() {
     if (visited.isEmpty) {
-      return Center(
+      return const Center(
         child: Text(
           '>> No visited locations found.',
-          style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
+          style: TerminalTextStyles.body,
         ),
       );
     }
@@ -126,30 +118,24 @@ class _JournalPageState extends State<JournalPage>
           margin: const EdgeInsets.all(12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            border: Border.all(color: terminalGreen),
+            border: Border.all(color: TerminalColors.green),
             borderRadius: BorderRadius.circular(10),
           ),
           child: ExpansionTile(
             backgroundColor: Colors.transparent,
-            iconColor: terminalGreen,
-            collapsedIconColor: terminalGreen,
-            textColor: terminalGreen,
-            collapsedTextColor: terminalGreen,
+            iconColor: TerminalColors.green,
+            collapsedIconColor: TerminalColors.green,
+            textColor: TerminalColors.green,
+            collapsedTextColor: TerminalColors.green,
             title: Text(
               '> ${location['name']}',
-              style: TextStyle(
-                color: terminalGreen,
-                fontFamily: 'Courier',
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TerminalTextStyles.heading.copyWith(fontSize: 18),
             ),
             subtitle: Text(
               '${location['city']}, ${location['state']}',
-              style: TextStyle(
-                color: terminalGreen.withOpacity(0.8),
-                fontFamily: 'Courier',
+              style: TerminalTextStyles.body.copyWith(
                 fontSize: 14,
+                color: TerminalColors.green.withOpacity(0.8),
               ),
             ),
             children: [
@@ -162,16 +148,12 @@ class _JournalPageState extends State<JournalPage>
                     children: [
                       Icon(
                         _getToolIcon(entry.key),
-                        color: entry.value ? terminalGreen : Colors.grey,
+                        color: entry.value ? TerminalColors.green : Colors.grey,
                         size: 28,
                       ),
                       Text(
                         entry.key,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                          fontFamily: 'Courier',
-                        ),
+                        style: TerminalTextStyles.muted.copyWith(fontSize: 12),
                       ),
                     ],
                   );
@@ -184,37 +166,30 @@ class _JournalPageState extends State<JournalPage>
     );
   }
 
-  Widget _terminalCard(
-      {required String title,
-      required String subtitle,
-      String? trailing,
-      Color? trailingColor}) {
+  Widget _terminalCard({
+    required String title,
+    required String subtitle,
+    String? trailing,
+    Color? trailingColor,
+  }) {
     return Container(
       margin: const EdgeInsets.all(12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: terminalGreen),
+        border: Border.all(color: TerminalColors.green),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '> $title',
-            style: TextStyle(
-              color: terminalGreen,
-              fontFamily: 'Courier',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('> $title',
+              style: TerminalTextStyles.heading.copyWith(fontSize: 18)),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: TextStyle(
-              color: terminalGreen.withOpacity(0.8),
-              fontFamily: 'Courier',
+            style: TerminalTextStyles.body.copyWith(
               fontSize: 14,
+              color: TerminalColors.green.withOpacity(0.8),
             ),
           ),
           if (trailing != null)
@@ -222,10 +197,9 @@ class _JournalPageState extends State<JournalPage>
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
                 trailing,
-                style: TextStyle(
-                  color: trailingColor ?? terminalGreen,
-                  fontFamily: 'Courier',
+                style: TerminalTextStyles.body.copyWith(
                   fontSize: 14,
+                  color: trailingColor ?? TerminalColors.green,
                 ),
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../pages/terminal_theme.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -15,22 +16,13 @@ class _ProfilePageState extends State<ProfilePage> {
   final String _email = "ghost@example.com";
   final int _ghostCoins = 120;
 
-  final Color terminalGreen = const Color(0xFF00FF00);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text(
-          '>> PROFILE_SYS.TXT',
-          style: TextStyle(
-            color: terminalGreen,
-            fontFamily: 'Courier',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        backgroundColor: TerminalColors.background,
+        title: const Text('>> PROFILE_SYS.TXT'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -73,12 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Text(
         '>> $title',
-        style: TextStyle(
-          color: terminalGreen,
-          fontFamily: 'Courier',
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TerminalTextStyles.heading.copyWith(fontSize: 16),
       ),
     );
   }
@@ -87,31 +74,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '> $label:',
-          style: TextStyle(
-            color: terminalGreen,
-            fontFamily: 'Courier',
-            fontSize: 14,
-          ),
-        ),
+        Text('> $label:',
+            style: TerminalTextStyles.body.copyWith(fontSize: 14)),
+        const SizedBox(height: 6),
         TextField(
           controller: controller,
-          style: TextStyle(
-            color: terminalGreen,
-            fontFamily: 'Courier',
-          ),
-          cursorColor: terminalGreen,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.black,
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: terminalGreen),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: terminalGreen),
-            ),
-          ),
+          style: TerminalTextStyles.body,
+          cursorColor: TerminalColors.green,
+          decoration: const InputDecoration(),
         ),
         const SizedBox(height: 12),
       ],
@@ -122,28 +92,17 @@ class _ProfilePageState extends State<ProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '> $label:',
-          style: TextStyle(
-            color: terminalGreen,
-            fontFamily: 'Courier',
-            fontSize: 14,
-          ),
-        ),
+        Text('> $label:',
+            style: TerminalTextStyles.body.copyWith(fontSize: 14)),
+        const SizedBox(height: 6),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            border: Border.all(color: terminalGreen),
+            border: Border.all(color: TerminalColors.green),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Text(
-            value,
-            style: TextStyle(
-              color: terminalGreen,
-              fontFamily: 'Courier',
-            ),
-          ),
+          child: Text(value, style: TerminalTextStyles.body),
         ),
         const SizedBox(height: 12),
       ],
@@ -155,17 +114,11 @@ class _ProfilePageState extends State<ProfilePage> {
       margin: const EdgeInsets.only(bottom: 12),
       width: double.infinity,
       child: OutlinedButton.icon(
-        icon: Icon(icon, color: terminalGreen),
-        label: Text(
-          label,
-          style: TextStyle(
-            color: terminalGreen,
-            fontFamily: 'Courier',
-          ),
-        ),
+        icon: Icon(icon, color: TerminalColors.green),
+        label: Text(label, style: TerminalTextStyles.body),
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: terminalGreen),
-          backgroundColor: Colors.black,
+          side: const BorderSide(color: TerminalColors.green),
+          backgroundColor: TerminalColors.background,
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
         onPressed: onPressed,
@@ -176,11 +129,8 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showMessage(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: Colors.black,
-        content: Text(
-          msg,
-          style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
-        ),
+        backgroundColor: TerminalColors.background,
+        content: Text(msg, style: TerminalTextStyles.body),
       ),
     );
   }

@@ -4,7 +4,7 @@ import '../pages/uv_sensor_page.dart';
 import '../pages/spirit_box_page.dart';
 import '../pages/parabolic_mic_page.dart';
 import '../pages/ghost_camera_page.dart';
-import '../pages/tool_tutorial_page.dart';
+import 'terminal_theme.dart';
 
 class ToolTutorialPage extends StatelessWidget {
   const ToolTutorialPage({Key? key}) : super(key: key);
@@ -15,29 +15,24 @@ class ToolTutorialPage extends StatelessWidget {
     required String description,
     required VoidCallback onTap,
   }) {
-    return Card(
-      color: Colors.black87,
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        border: Border.all(color: TerminalColors.green),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         onTap: onTap,
         title: Text(
           title,
-          style: const TextStyle(
-            color: Colors.greenAccent,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TerminalTextStyles.heading,
         ),
         subtitle: Text(
           description,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 14,
-          ),
+          style: TerminalTextStyles.muted.copyWith(fontSize: 14),
         ),
-        trailing: const Icon(Icons.play_arrow, color: Colors.greenAccent),
+        trailing: const Icon(Icons.play_arrow, color: TerminalColors.green),
       ),
     );
   }
@@ -47,17 +42,15 @@ class ToolTutorialPage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.2),
+        color: TerminalColors.green.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.greenAccent),
+        border: Border.all(color: TerminalColors.green),
       ),
       child: const Text(
-        'Tutorial Mode: All tools are unlocked for simulation purposes. '
-        'No ghost coins or rewards will be earned in this mode.',
-        style: TextStyle(
-          color: Colors.greenAccent,
-          fontSize: 14,
-        ),
+        '>> Tutorial Mode Activated\n'
+        'All tools are unlocked for simulation.\n'
+        'No ghost coins or rewards will be earned.',
+        style: TerminalTextStyles.body,
         textAlign: TextAlign.center,
       ),
     );
@@ -66,11 +59,12 @@ class ToolTutorialPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        title: const Text('Tool Tutorial'),
-        backgroundColor: Colors.black,
+        backgroundColor: TerminalColors.background,
+        title: const Text('>> TOOL_TUTORIAL.EXE',
+            style: TerminalTextStyles.heading),
       ),
-      backgroundColor: Colors.black,
       body: ListView(
         children: [
           buildTutorialHeader(),
