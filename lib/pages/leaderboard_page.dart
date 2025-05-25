@@ -42,13 +42,16 @@ class _LeaderboardPageState extends State<LeaderboardPage>
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-              child: CircularProgressIndicator(color: TerminalColors.green));
+            child: CircularProgressIndicator(color: TerminalColors.green),
+          );
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(
-            child: Text(">> No leaderboard data yet.",
-                style: TerminalTextStyles.muted),
+            child: Text(
+              ">> No leaderboard data yet.",
+              style: TerminalTextStyles.body,
+            ),
           );
         }
 
@@ -72,14 +75,17 @@ class _LeaderboardPageState extends State<LeaderboardPage>
               ),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.black,
+                  backgroundColor: TerminalColors.background,
                   foregroundColor: TerminalColors.green,
-                  child: Text('#${index + 1}'),
+                  child: Text(
+                    '#${index + 1}',
+                    style: TerminalTextStyles.body,
+                  ),
                 ),
                 title: Text(username, style: TerminalTextStyles.heading),
                 subtitle: Text(
                   "$coins ghost coins • $entries evidence • $locations locations",
-                  style: TerminalTextStyles.muted,
+                  style: TerminalTextStyles.body,
                 ),
               ),
             );
@@ -95,12 +101,15 @@ class _LeaderboardPageState extends State<LeaderboardPage>
       backgroundColor: TerminalColors.background,
       appBar: AppBar(
         backgroundColor: TerminalColors.background,
-        title: const Text(">> LEADERBOARD_SYS.TXT"),
+        title: const Text(
+          ">> LEADERBOARD_SYS.TXT",
+          style: TerminalTextStyles.heading,
+        ),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
           labelColor: TerminalColors.green,
-          unselectedLabelColor: TerminalColors.faded,
+          unselectedLabelColor: TerminalColors.text,
           indicatorColor: TerminalColors.green,
           labelStyle: TerminalTextStyles.body,
           tabs: _categories.map((cat) => Tab(text: cat["label"])).toList(),

@@ -29,7 +29,7 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
     103.5,
     105.1,
     106.7,
-    108.0
+    108.0,
   ];
   int _currentIndex = 0;
   bool _isPlaying = false;
@@ -98,7 +98,7 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
+            color: TerminalColors.backgroundLight,
             border: Border.all(color: TerminalColors.green),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -130,7 +130,7 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.black87,
+                  color: TerminalColors.backgroundLight,
                   border: Border.all(color: TerminalColors.green),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -147,7 +147,9 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
               Icon(
                 LucideIcons.ghost,
                 size: 60,
-                color: _responseDetected ? TerminalColors.green : Colors.grey,
+                color: _responseDetected
+                    ? TerminalColors.green
+                    : TerminalColors.faded,
                 shadows: [
                   if (_responseDetected)
                     const Shadow(color: TerminalColors.green, blurRadius: 20),

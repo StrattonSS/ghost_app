@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
-import '../main_scaffold.dart';
-import 'auth_page.dart';
+import 'register_user.dart';
+import 'terminal_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,8 +15,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
-  bool _dataLoaded = false;
-  bool _minimumTimePassed = false;
+  bool _animationReady = false;
 
   @override
   void initState() {
@@ -28,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
           ..initialize().then((_) {
             _controller.setLooping(true);
             _controller.play();
-            setState(() {});
+            setState(() => _animationReady = true);
           });
 
     final player1 = AudioPlayer();
@@ -40,34 +38,12 @@ class _SplashScreenState extends State<SplashScreen> {
     });
 
     Future.delayed(const Duration(seconds: 10), () {
-      _minimumTimePassed = true;
-      _checkIfReady();
-    });
-
-    _loadAppData();
-  }
-
-  Future<void> _loadAppData() async {
-    await Future.delayed(const Duration(seconds: 5));
-    _dataLoaded = true;
-    _checkIfReady();
-  }
-
-  void _checkIfReady() {
-    if (_dataLoaded && _minimumTimePassed) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const MainScaffold()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AuthPage()),
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const RegisterUserScreen()),
         );
       }
-    }
+    });
   }
 
   @override
@@ -79,14 +55,14 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       body: Center(
-        child: _controller.value.isInitialized
+        child: _animationReady
             ? AspectRatio(
                 aspectRatio: _controller.value.aspectRatio,
                 child: VideoPlayer(_controller),
               )
-            : const CircularProgressIndicator(color: Colors.white),
+            : const CircularProgressIndicator(color: TerminalColors.green),
       ),
     );
   }

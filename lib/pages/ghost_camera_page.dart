@@ -118,8 +118,11 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
               children: [
                 _capturedImagePath == null
                     ? CameraPreview(_controller)
-                    : Image.file(File(_capturedImagePath!),
-                        width: double.infinity, fit: BoxFit.cover),
+                    : Image.file(
+                        File(_capturedImagePath!),
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                 if (_ghostOverlayUsed != null)
                   Positioned.fill(
                     child: Image.asset(
@@ -141,14 +144,13 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black87,
+                      color: TerminalColors.background,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
+                    child: Text(
                       "REC",
-                      style: TextStyle(
-                        color: Colors.redAccent,
-                        fontWeight: FontWeight.bold,
+                      style: TerminalTextStyles.label.copyWith(
+                        color: TerminalColors.red,
                       ),
                     ),
                   ),
@@ -160,9 +162,9 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
                   child: Center(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        foregroundColor: Colors.white,
-                        textStyle: TerminalTextStyles.body,
+                        backgroundColor: TerminalColors.accent,
+                        foregroundColor: TerminalColors.text,
+                        textStyle: TerminalTextStyles.button,
                       ),
                       onPressed: _takePicture,
                       icon: const Icon(Icons.camera_alt),
@@ -184,9 +186,9 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white24,
-                          foregroundColor: Colors.white,
-                          textStyle: TerminalTextStyles.body,
+                          backgroundColor: TerminalColors.backgroundLight,
+                          foregroundColor: TerminalColors.text,
+                          textStyle: TerminalTextStyles.button,
                         ),
                         child: const Text("Reset View"),
                       ),
@@ -196,7 +198,9 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
             );
           } else {
             return const Center(
-              child: CircularProgressIndicator(color: TerminalColors.green),
+              child: CircularProgressIndicator(
+                color: TerminalColors.green,
+              ),
             );
           }
         },

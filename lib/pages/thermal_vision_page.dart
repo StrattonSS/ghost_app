@@ -150,7 +150,8 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Evidence logged: $evidenceType'),
+        content: Text('Evidence logged: $evidenceType',
+            style: TerminalTextStyles.body),
         backgroundColor: TerminalColors.background,
         behavior: SnackBarBehavior.floating,
       ),
@@ -215,11 +216,15 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
                               .last
                               .replaceAll('.png', ''),
                         ),
-                        style: TerminalButtonStyles.Elevated.copyWith(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.deepPurple),
-                          foregroundColor:
-                              MaterialStateProperty.all(Colors.white),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: TerminalColors.green,
+                          foregroundColor: TerminalColors.background,
+                          textStyle: TerminalTextStyles.button,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                         child: const Text("Log Thermal Evidence"),
                       ),

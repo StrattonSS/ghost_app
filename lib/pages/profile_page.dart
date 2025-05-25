@@ -1,141 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:ghost_app/pages/terminal_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'login_user.dart';
+import 'terminal_theme.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  @override
-  State<ProfilePage> createState() => _ProfilePageState();
-}
+  void _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
 
-class _ProfilePageState extends State<ProfilePage> {
-  final TextEditingController _nameController =
-      TextEditingController(text: "Ghost Hunter");
-  final TextEditingController _dobController =
-      TextEditingController(text: "01/01/2000");
-  final String _email = "ghost@example.com";
-  final int _ghostCoins = 120;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginUserScreen()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: TerminalColors.background,
       appBar: AppBar(
+        title:
+            const Text('>> PROFILE_SYS.TXT', style: TerminalTextStyles.heading),
         backgroundColor: TerminalColors.background,
-        title: Text('>> PROFILE_SYS.TXT', style: TerminalTextStyles.heading),
+        foregroundColor: TerminalColors.green,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _sectionHeader("USER INFO"),
-            _terminalInputField("Full Name", _nameController),
-            _terminalInputField("Date of Birth", _dobController),
-            _terminalReadOnlyField("Email", _email),
-            const SizedBox(height: 16),
-            _terminalButton("Change Password", Icons.lock, () {
-              _showMessage("Change password clicked.");
-            }),
-            const SizedBox(height: 24),
-            _sectionHeader("ACCOUNT STATS"),
-            _terminalReadOnlyField("Ghost Coins", '$_ghostCoins'),
-            const SizedBox(height: 24),
-            _sectionHeader("ACCOUNT ACTIONS"),
-            _terminalButton("Log Out", Icons.exit_to_app, () {
-              _showMessage("Logging out...");
-            }),
-            _terminalButton("Delete Account", Icons.delete_forever, () {
-              _showMessage("Delete account requested.");
-            }),
-            const SizedBox(height: 24),
-            _sectionHeader("SUPPORT & INFO"),
-            _terminalButton("Contact Support", Icons.support_agent, () {
-              _showMessage("Support contact opened.");
-            }),
-            _terminalReadOnlyField("App Version", "v1.0.0"),
+            Text(
+              'Logged in as: ${user?.email ?? "Unknown"}',
+              style: TerminalTextStyles.body,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _logout(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: TerminalColors.green,
+                foregroundColor: TerminalColors.background,
+                textStyle: TerminalTextStyles.button,
+              ),
+              child: const Text('Logout'),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Text('>> $title',
-          style: TerminalTextStyles.heading.copyWith(fontSize: 16)),
-    );
-  }
-
-  Widget _terminalInputField(String label, TextEditingController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('> $label:',
-            style: TerminalTextStyles.body.copyWith(fontSize: 14)),
-        TextField(
-          controller: controller,
-          style: TerminalTextStyles.body,
-          cursorColor: TerminalColors.green,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: TerminalColors.background,
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: TerminalColors.green),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: TerminalColors.green),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
-  Widget _terminalReadOnlyField(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('> $label:',
-            style: TerminalTextStyles.body.copyWith(fontSize: 14)),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            border: Border.all(color: TerminalColors.green),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(value, style: TerminalTextStyles.body),
-        ),
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
-  Widget _terminalButton(String label, IconData icon, VoidCallback onPressed) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        icon: Icon(icon, color: TerminalColors.green),
-        label: Text(label, style: TerminalTextStyles.body),
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: TerminalColors.green),
-          backgroundColor: TerminalColors.background,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-        onPressed: onPressed,
-      ),
-    );
-  }
-
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: TerminalColors.background,
-        content: Text(msg, style: TerminalTextStyles.body),
       ),
     );
   }

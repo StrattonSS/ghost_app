@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'location_detail.dart';
-import 'terminal_theme.dart'; // ✅ Importing shared terminal style
+import 'terminal_theme.dart';
 
 class Location {
   final String id;
@@ -52,7 +52,6 @@ class _HomePageState extends State<HomePage> {
   Set<String> states = {};
   Set<String> cities = {};
   Set<String> types = {};
-
   bool isLoading = true;
 
   @override
@@ -102,8 +101,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final terminalText = TerminalTextStyles.body.copyWith(fontSize: 18);
-
     final availableCities = selectedState == 'Any'
         ? allLocations.map((loc) => loc.city).toSet().toList()
         : allLocations
@@ -118,9 +115,10 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(16),
         child: isLoading
             ? const Center(
-                child: CircularProgressIndicator(color: TerminalColors.green))
+                child: CircularProgressIndicator(color: TerminalColors.green),
+              )
             : DefaultTextStyle(
-                style: terminalText,
+                style: TerminalTextStyles.body,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -129,10 +127,10 @@ class _HomePageState extends State<HomePage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: _clearFilters,
-                        child: Text("> Clear All Filters", style: terminalText),
+                        child: const Text("> Clear All Filters"),
                       ),
                     ),
-                    Text("> Search:"),
+                    const Text("> Search:"),
                     const SizedBox(height: 6),
                     Container(
                       margin: const EdgeInsets.only(bottom: 24),
@@ -143,24 +141,23 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: TextField(
                         controller: searchController,
-                        style: terminalText,
+                        style: TerminalTextStyles.body,
                         cursorColor: TerminalColors.green,
                         decoration: InputDecoration(
                           hintText: 'Type, name, or activity...',
-                          hintStyle: TextStyle(
-                              color: TerminalColors.green.withOpacity(0.5)),
+                          hintStyle: TerminalTextStyles.muted,
                           border: InputBorder.none,
                         ),
                         onChanged: (value) =>
                             setState(() => searchQuery = value),
                       ),
                     ),
-                    Text("> Filter by Type:"),
+                    const Text("> Filter by Type:"),
                     const SizedBox(height: 6),
                     _buildDropdown(selectedType, types, (value) {
                       setState(() => selectedType = value);
                     }),
-                    Text("> Select State:"),
+                    const Text("> Select State:"),
                     const SizedBox(height: 6),
                     _buildDropdown(selectedState, states, (value) {
                       setState(() {
@@ -168,19 +165,21 @@ class _HomePageState extends State<HomePage> {
                         selectedCity = 'Any';
                       });
                     }),
-                    Text("> Select City:"),
+                    const Text("> Select City:"),
                     const SizedBox(height: 6),
                     _buildDropdown(selectedCity, availableCities.toSet(),
                         (value) {
                       setState(() => selectedCity = value);
                     }),
-                    Text("> Matching Locations:"),
+                    const Text("> Matching Locations:"),
                     const SizedBox(height: 10),
                     Expanded(
                       child: filteredLocations.isEmpty
                           ? const Center(
-                              child: Text("> No matching results found.",
-                                  style: TerminalTextStyles.body),
+                              child: Text(
+                                "> No matching results found.",
+                                style: TerminalTextStyles.body,
+                              ),
                             )
                           : GridView.count(
                               crossAxisCount: 2,
@@ -194,7 +193,8 @@ class _HomePageState extends State<HomePage> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (_) => LocationDetailPage(
-                                            locationId: loc.id),
+                                          locationId: loc.id,
+                                        ),
                                       ),
                                     );
                                   },
@@ -212,17 +212,20 @@ class _HomePageState extends State<HomePage> {
                                         Expanded(
                                           child: loc.imageUrl != null &&
                                                   loc.imageUrl!.isNotEmpty
-                                              ? Image.network(loc.imageUrl!,
-                                                  fit: BoxFit.cover)
+                                              ? Image.network(
+                                                  loc.imageUrl!,
+                                                  fit: BoxFit.cover,
+                                                )
                                               : const Icon(
                                                   Icons.image_not_supported,
                                                   color: TerminalColors.green,
-                                                  size: 40),
+                                                  size: 40,
+                                                ),
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
                                           loc.name,
-                                          style: terminalText,
+                                          style: TerminalTextStyles.body,
                                           textAlign: TextAlign.center,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -257,8 +260,7 @@ class _HomePageState extends State<HomePage> {
         items: ['Any', ...options].map((value) {
           return DropdownMenuItem(
             value: value,
-            child: Text(value,
-                style: TerminalTextStyles.body.copyWith(fontSize: 18)),
+            child: Text(value, style: TerminalTextStyles.body),
           );
         }).toList(),
         onChanged: (value) => onChanged(value!),

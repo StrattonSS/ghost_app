@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'terminal_theme.dart'; // ✅ Corrected import path
+import 'terminal_theme.dart';
 
 class JournalPage extends StatefulWidget {
   const JournalPage({super.key});
@@ -51,11 +51,12 @@ class _JournalPageState extends State<JournalPage>
       backgroundColor: TerminalColors.background,
       appBar: AppBar(
         backgroundColor: TerminalColors.background,
-        title: const Text('>> JOURNAL_LOG.TXT'),
+        title:
+            const Text('>> JOURNAL_LOG.TXT', style: TerminalTextStyles.heading),
         bottom: TabBar(
           controller: _tabController,
           labelColor: TerminalColors.green,
-          unselectedLabelColor: TerminalColors.faded,
+          unselectedLabelColor: TerminalColors.text,
           indicatorColor: TerminalColors.green,
           labelStyle: TerminalTextStyles.body,
           tabs: const [
@@ -92,7 +93,6 @@ class _JournalPageState extends State<JournalPage>
           title: location['name'],
           subtitle: '${location['city']}, ${location['state']}',
           trailing: '[★ FAVORITED]',
-          trailingColor: TerminalColors.red,
         );
       },
     );
@@ -129,14 +129,11 @@ class _JournalPageState extends State<JournalPage>
             collapsedTextColor: TerminalColors.green,
             title: Text(
               '> ${location['name']}',
-              style: TerminalTextStyles.heading.copyWith(fontSize: 18),
+              style: TerminalTextStyles.heading,
             ),
             subtitle: Text(
               '${location['city']}, ${location['state']}',
-              style: TerminalTextStyles.body.copyWith(
-                fontSize: 14,
-                color: TerminalColors.green.withOpacity(0.8),
-              ),
+              style: TerminalTextStyles.body,
             ),
             children: [
               Wrap(
@@ -153,7 +150,7 @@ class _JournalPageState extends State<JournalPage>
                       ),
                       Text(
                         entry.key,
-                        style: TerminalTextStyles.muted.copyWith(fontSize: 12),
+                        style: TerminalTextStyles.body,
                       ),
                     ],
                   );
@@ -170,7 +167,6 @@ class _JournalPageState extends State<JournalPage>
     required String title,
     required String subtitle,
     String? trailing,
-    Color? trailingColor,
   }) {
     return Container(
       margin: const EdgeInsets.all(12),
@@ -182,26 +178,13 @@ class _JournalPageState extends State<JournalPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('> $title',
-              style: TerminalTextStyles.heading.copyWith(fontSize: 18)),
+          Text('> $title', style: TerminalTextStyles.heading),
           const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: TerminalTextStyles.body.copyWith(
-              fontSize: 14,
-              color: TerminalColors.green.withOpacity(0.8),
-            ),
-          ),
+          Text(subtitle, style: TerminalTextStyles.body),
           if (trailing != null)
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                trailing,
-                style: TerminalTextStyles.body.copyWith(
-                  fontSize: 14,
-                  color: trailingColor ?? TerminalColors.green,
-                ),
-              ),
+              child: Text(trailing, style: TerminalTextStyles.body),
             ),
         ],
       ),

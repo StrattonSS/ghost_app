@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-// Firebase initialization temporarily commented out
-// import 'package:firebase_core/firebase_core.dart';
-// import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:ghost_app/firebase_options.dart';
 
+// Temporarily using basic splash screen instead of custom
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const GhostApp());
 }
 

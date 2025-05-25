@@ -88,11 +88,11 @@ class _SubmitLocationPageState extends State<SubmitLocationPage> {
                     labelStyle: TerminalTextStyles.body.copyWith(
                       color: TerminalColors.green.withOpacity(0.7),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: TerminalColors.green),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: TerminalColors.green),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: TerminalColors.green),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: TerminalColors.green),
                     ),
                   ),
                   validator: (value) =>

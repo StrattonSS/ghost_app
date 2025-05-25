@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'terminal_theme.dart';
 
 class LocationDetailPage extends StatefulWidget {
   final String locationId;
@@ -18,8 +19,6 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
   Map<String, dynamic>? locationData;
   bool isLoading = true;
   bool isFavorited = false;
-
-  final Color terminalGreen = const Color(0xFF00FF00);
 
   @override
   void initState() {
@@ -74,11 +73,11 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.black,
+        const SnackBar(
+          backgroundColor: TerminalColors.background,
           content: Text(
             '>> Added to favorites!',
-            style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
+            style: TerminalTextStyles.body,
           ),
         ),
       );
@@ -90,35 +89,34 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: TerminalColors.background,
         title: Text(
           locationData?['name'] ?? 'Loading...',
-          style: TextStyle(
-            color: terminalGreen,
-            fontFamily: 'Courier',
-            fontWeight: FontWeight.bold,
-          ),
+          style: TerminalTextStyles.heading,
         ),
       ),
       floatingActionButton: isFavorited
           ? null
           : FloatingActionButton.extended(
-              backgroundColor: Colors.black,
-              icon: Icon(Icons.favorite_border, color: terminalGreen),
-              label: Text(
+              backgroundColor: TerminalColors.background,
+              icon: const Icon(Icons.favorite_border,
+                  color: TerminalColors.green),
+              label: const Text(
                 "Add to Favorites",
-                style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
+                style: TerminalTextStyles.button,
               ),
               onPressed: addToFavorites,
             ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator(color: terminalGreen))
+          ? const Center(
+              child: CircularProgressIndicator(color: TerminalColors.green),
+            )
           : Padding(
               padding: const EdgeInsets.all(16),
               child: DefaultTextStyle(
-                style: TextStyle(color: terminalGreen, fontFamily: 'Courier'),
+                style: TerminalTextStyles.body,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

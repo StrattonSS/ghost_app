@@ -138,7 +138,7 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Evidence logged!'),
+        content: Text('Evidence logged!', style: TerminalTextStyles.body),
         backgroundColor: TerminalColors.background,
       ),
     );
@@ -149,7 +149,8 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
     return Scaffold(
       backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        title: const Text(">> PARABOLIC_MIC_SYS.TXT"),
+        title: const Text(">> PARABOLIC_MIC_SYS.TXT",
+            style: TerminalTextStyles.heading),
         backgroundColor: TerminalColors.background,
         foregroundColor: TerminalColors.green,
       ),
@@ -168,7 +169,7 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
               bottom: 100,
               child: Text(
                 "Rotate device to find the signal...",
-                style: TerminalTextStyles.muted,
+                style: TerminalTextStyles.body,
               ),
             ),
             Positioned(
@@ -182,8 +183,8 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
                     backgroundColor: _isPlayingAudio
                         ? TerminalColors.green
                         : TerminalColors.green.withOpacity(0.3),
-                    foregroundColor: Colors.black,
-                    textStyle: TerminalTextStyles.body,
+                    foregroundColor: TerminalColors.background,
+                    textStyle: TerminalTextStyles.button,
                   ),
                   child: const Text("Log Evidence"),
                 ),

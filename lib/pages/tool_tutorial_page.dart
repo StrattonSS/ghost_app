@@ -4,7 +4,7 @@ import '../pages/uv_sensor_page.dart';
 import '../pages/spirit_box_page.dart';
 import '../pages/parabolic_mic_page.dart';
 import '../pages/ghost_camera_page.dart';
-import 'terminal_theme.dart';
+import 'terminal_theme.dart' as theme;
 
 class ToolTutorialPage extends StatelessWidget {
   const ToolTutorialPage({Key? key}) : super(key: key);
@@ -18,7 +18,7 @@ class ToolTutorialPage extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: TerminalColors.green),
+        border: Border.all(color: theme.TerminalColors.green),
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
@@ -26,13 +26,14 @@ class ToolTutorialPage extends StatelessWidget {
         onTap: onTap,
         title: Text(
           title,
-          style: TerminalTextStyles.heading,
+          style: theme.TerminalTextStyles.heading,
         ),
         subtitle: Text(
           description,
-          style: TerminalTextStyles.muted.copyWith(fontSize: 14),
+          style: theme.TerminalTextStyles.muted.copyWith(fontSize: 14),
         ),
-        trailing: const Icon(Icons.play_arrow, color: TerminalColors.green),
+        trailing:
+            const Icon(Icons.play_arrow, color: theme.TerminalColors.green),
       ),
     );
   }
@@ -42,15 +43,15 @@ class ToolTutorialPage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: TerminalColors.green.withOpacity(0.1),
+        color: theme.TerminalColors.green.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: TerminalColors.green),
+        border: Border.all(color: theme.TerminalColors.green),
       ),
       child: const Text(
         '>> Tutorial Mode Activated\n'
         'All tools are unlocked for simulation.\n'
         'No ghost coins or rewards will be earned.',
-        style: TerminalTextStyles.body,
+        style: theme.TerminalTextStyles.body,
         textAlign: TextAlign.center,
       ),
     );
@@ -59,11 +60,11 @@ class ToolTutorialPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TerminalColors.background,
+      backgroundColor: theme.TerminalColors.background,
       appBar: AppBar(
-        backgroundColor: TerminalColors.background,
+        backgroundColor: theme.TerminalColors.background,
         title: const Text('>> TOOL_TUTORIAL.EXE',
-            style: TerminalTextStyles.heading),
+            style: theme.TerminalTextStyles.heading),
       ),
       body: ListView(
         children: [
@@ -75,7 +76,7 @@ class ToolTutorialPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const EMFReaderPage()),
+                MaterialPageRoute(builder: (_) => const EMFReaderPage()),
               );
             },
           ),
@@ -86,7 +87,7 @@ class ToolTutorialPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const UVSensorPage()),
+                MaterialPageRoute(builder: (_) => const UVSensorPage()),
               );
             },
           ),
@@ -97,7 +98,7 @@ class ToolTutorialPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SpiritBoxPage()),
+                MaterialPageRoute(builder: (_) => const SpiritBoxPage()),
               );
             },
           ),
@@ -108,8 +109,7 @@ class ToolTutorialPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const ParabolicMicPage()),
+                MaterialPageRoute(builder: (_) => const ParabolicMicPage()),
               );
             },
           ),
@@ -120,8 +120,7 @@ class ToolTutorialPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const GhostCameraPage()),
+                MaterialPageRoute(builder: (_) => const GhostCameraPage()),
               );
             },
           ),

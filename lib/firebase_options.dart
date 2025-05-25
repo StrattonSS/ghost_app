@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDwqYKHNmGSjseffrUx-Tv57hlC3HfaOgw',
+    apiKey: 'AIzaSyCQitllrpHB8tn1sreclC5n4tF5nG5cG8M',
     appId: '1:869905958615:ios:79f19cade94230c9a0d292',
     messagingSenderId: '869905958615',
     projectId: 'ghost-app-61105',
@@ -67,7 +67,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDwqYKHNmGSjseffrUx-Tv57hlC3HfaOgw',
+    apiKey: 'AIzaSyCQitllrpHB8tn1sreclC5n4tF5nG5cG8M',
     appId: '1:869905958615:ios:79f19cade94230c9a0d292',
     messagingSenderId: '869905958615',
     projectId: 'ghost-app-61105',
@@ -83,4 +83,5 @@ class DefaultFirebaseOptions {
     authDomain: 'ghost-app-61105.firebaseapp.com',
     storageBucket: 'ghost-app-61105.firebasestorage.app',
   );
+
 }
