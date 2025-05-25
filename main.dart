@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:ghost_app/pages/splash_screen.dart';
-import 'firebase_options.dart';
-import 'pages/terminal_theme.dart';
+// Firebase initialization temporarily commented out
+// import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
   runApp(const GhostApp());
 }
 
@@ -21,23 +19,39 @@ class GhostApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'G.H.O.S.T.',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: TerminalColors.background,
-        fontFamily: 'Courier',
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF000000),
+        primaryColor: Colors.greenAccent,
         appBarTheme: const AppBarTheme(
-          backgroundColor: TerminalColors.background,
-          foregroundColor: TerminalColors.green,
-          titleTextStyle: TerminalTextStyles.heading,
-          iconTheme: IconThemeData(color: TerminalColors.green),
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.greenAccent,
         ),
-        iconTheme: const IconThemeData(color: TerminalColors.green),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: TerminalColors.background,
-          foregroundColor: TerminalColors.green,
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.black,
         ),
       ),
-      home: const SplashScreen(),
+      home: const PlaceholderSplashScreen(),
+    );
+  }
+}
+
+class PlaceholderSplashScreen extends StatelessWidget {
+  const PlaceholderSplashScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Text(
+          'G.H.O.S.T.',
+          style: TextStyle(
+            fontSize: 32,
+            color: Colors.greenAccent,
+            fontFamily: 'Courier',
+          ),
+        ),
+      ),
     );
   }
 }

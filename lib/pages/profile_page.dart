@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../pages/terminal_theme.dart';
+import 'package:ghost_app/pages/terminal_theme.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,7 +22,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: TerminalColors.background,
       appBar: AppBar(
         backgroundColor: TerminalColors.background,
-        title: const Text('>> PROFILE_SYS.TXT'),
+        title: Text('>> PROFILE_SYS.TXT', style: TerminalTextStyles.heading),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -63,10 +63,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _sectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Text(
-        '>> $title',
-        style: TerminalTextStyles.heading.copyWith(fontSize: 16),
-      ),
+      child: Text('>> $title',
+          style: TerminalTextStyles.heading.copyWith(fontSize: 16)),
     );
   }
 
@@ -76,12 +74,20 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         Text('> $label:',
             style: TerminalTextStyles.body.copyWith(fontSize: 14)),
-        const SizedBox(height: 6),
         TextField(
           controller: controller,
           style: TerminalTextStyles.body,
           cursorColor: TerminalColors.green,
-          decoration: const InputDecoration(),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: TerminalColors.background,
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: TerminalColors.green),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: TerminalColors.green),
+            ),
+          ),
         ),
         const SizedBox(height: 12),
       ],
@@ -94,7 +100,6 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         Text('> $label:',
             style: TerminalTextStyles.body.copyWith(fontSize: 14)),
-        const SizedBox(height: 6),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
@@ -117,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
         icon: Icon(icon, color: TerminalColors.green),
         label: Text(label, style: TerminalTextStyles.body),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: TerminalColors.green),
+          side: BorderSide(color: TerminalColors.green),
           backgroundColor: TerminalColors.background,
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
