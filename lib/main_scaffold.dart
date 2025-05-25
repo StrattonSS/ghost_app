@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ghost_app/pages/home_page.dart';
 import 'package:ghost_app/pages/journal_page.dart';
 import 'package:ghost_app/pages/tools_page.dart';
+import 'package:ghost_app/pages/profile_page.dart'; // ✅ Import the real profile screen
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     HomePage(),
     JournalPage(),
     ToolsPage(),
-    Center(child: Text("Profile (Coming Soon)", style: TextStyle(fontSize: 18)))
+    ProfilePage(), // ✅ Replaced placeholder with real page
   ];
 
   final List<BottomNavigationBarItem> _navItems = [
