@@ -24,7 +24,6 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
       final x = event.x;
       final y = event.y;
       final z = event.z;
-
       final magnitude = sqrt(x * x + y * y + z * z);
 
       setState(() {
@@ -41,14 +40,14 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
     return TerminalColors.greyDark;
   }
 
-  Widget _buildEMFBars() {
+  Widget _buildEMFBars(double scaleFactor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(5, (index) {
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: 20,
-          height: (index + 1) * 20.0,
+          margin: EdgeInsets.symmetric(horizontal: 4 * scaleFactor),
+          width: 20 * scaleFactor,
+          height: (index + 1) * 20.0 * scaleFactor,
           decoration: BoxDecoration(
             color: _getBarColor(index),
             borderRadius: BorderRadius.circular(4),
@@ -61,6 +60,8 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
   @override
   Widget build(BuildContext context) {
     final isAlarm = _emfValue > 50.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final scaleFactor = screenWidth < 400 ? 0.8 : 1.0;
 
     return Scaffold(
       backgroundColor: TerminalColors.background,
@@ -69,25 +70,40 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
         title:
             const Text('>> EMF_READER.EXE', style: TerminalTextStyles.heading),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('EMF Strength', style: TerminalTextStyles.body),
-            Text(
-              '$_emfValue µT',
-              style: TerminalTextStyles.heading.copyWith(fontSize: 48),
-            ),
-            const SizedBox(height: 20),
-            _buildEMFBars(),
-            const SizedBox(height: 30),
-            Text(
-              isAlarm ? 'ALARM' : 'NORMAL',
-              style: TerminalTextStyles.label.copyWith(
-                color: isAlarm ? TerminalColors.red : TerminalColors.green,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('EMF Strength', style: TerminalTextStyles.body),
+                    const SizedBox(height: 12),
+                    Text(
+                      '$_emfValue µT',
+                      style: TerminalTextStyles.heading
+                          .copyWith(fontSize: 48 * scaleFactor),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildEMFBars(scaleFactor),
+                    const SizedBox(height: 30),
+                    Text(
+                      isAlarm ? 'ALARM' : 'NORMAL',
+                      style: TerminalTextStyles.label.copyWith(
+                        color:
+                            isAlarm ? TerminalColors.red : TerminalColors.green,
+                        fontSize: 20 * scaleFactor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

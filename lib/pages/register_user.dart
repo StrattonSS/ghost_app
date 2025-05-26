@@ -115,10 +115,10 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: TerminalColors.background,
-            enabledBorder: OutlineInputBorder(
+            enabledBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: TerminalColors.green),
             ),
-            focusedBorder: OutlineInputBorder(
+            focusedBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: TerminalColors.green),
             ),
           ),
@@ -149,51 +149,63 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              _buildInputField('Username', _usernameController),
-              const SizedBox(height: 16),
-              _buildInputField('Email', _emailController),
-              const SizedBox(height: 16),
-              _buildInputField('Password', _passwordController, obscure: true),
-              const SizedBox(height: 24),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  'Date of Birth (Optional)',
-                  style: TerminalTextStyles.body,
-                ),
-                subtitle: Text(
-                  _dob == null
-                      ? 'Not selected'
-                      : DateFormat.yMMMd().format(_dob!),
-                  style: TerminalTextStyles.body,
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.calendar_today),
-                  color: TerminalColors.green,
-                  onPressed: _selectDateOfBirth,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Form(
+                key: _formKey,
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      _buildInputField('Username', _usernameController),
+                      const SizedBox(height: 16),
+                      _buildInputField('Email', _emailController),
+                      const SizedBox(height: 16),
+                      _buildInputField('Password', _passwordController,
+                          obscure: true),
+                      const SizedBox(height: 24),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          'Date of Birth (Optional)',
+                          style: TerminalTextStyles.body,
+                        ),
+                        subtitle: Text(
+                          _dob == null
+                              ? 'Not selected'
+                              : DateFormat.yMMMd().format(_dob!),
+                          style: TerminalTextStyles.body,
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.calendar_today),
+                          color: TerminalColors.green,
+                          onPressed: _selectDateOfBirth,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: _loading ? null : _register,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: TerminalColors.green,
+                          foregroundColor: TerminalColors.background,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 24),
+                          textStyle: TerminalTextStyles.button,
+                        ),
+                        child: _loading
+                            ? const CircularProgressIndicator(
+                                color: TerminalColors.background,
+                              )
+                            : const Text('>> REGISTER'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _loading ? null : _register,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TerminalColors.green,
-                  foregroundColor: TerminalColors.background,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                  textStyle: TerminalTextStyles.button,
-                ),
-                child: _loading
-                    ? const CircularProgressIndicator()
-                    : const Text('>> REGISTER'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

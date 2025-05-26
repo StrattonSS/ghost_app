@@ -15,29 +15,38 @@ class AboutPage extends StatelessWidget {
           style: TerminalTextStyles.heading,
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              'G.H.O.S.T. - Geolocated Haunting Observation & Survey Tracker',
-              style: TerminalTextStyles.heading,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'G.H.O.S.T. - Geolocated Haunting Observation & Survey Tracker',
+                      style: TerminalTextStyles.heading,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'This app allows you to explore reported paranormal locations, collect ghostly evidence, and rank up on the leaderboard.',
+                      style: TerminalTextStyles.body,
+                    ),
+                    SizedBox(height: 24),
+                    Text('Version: 1.0.0', style: TerminalTextStyles.muted),
+                    SizedBox(height: 8),
+                    Text('Developed by Stratton Software Solutions',
+                        style: TerminalTextStyles.muted),
+                    SizedBox(height: 8),
+                    Text('Support: strattonsoftwaresolutions@gmail.com',
+                        style: TerminalTextStyles.muted),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: 16),
-            Text(
-              'This app allows you to explore reported paranormal locations, collect ghostly evidence, and rank up on the leaderboard.',
-              style: TerminalTextStyles.body,
-            ),
-            SizedBox(height: 24),
-            Text('Version: 1.0.0', style: TerminalTextStyles.muted),
-            SizedBox(height: 8),
-            Text('Developed by Stratton Software Solutions',
-                style: TerminalTextStyles.muted),
-            SizedBox(height: 8),
-            Text('Support: strattonsoftwaresolutions@gmail.com',
-                style: TerminalTextStyles.muted),
-          ],
+          ),
         ),
       ),
     );

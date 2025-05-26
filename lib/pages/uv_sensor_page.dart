@@ -114,8 +114,9 @@ class _UvSensorPageState extends State<UVSensorPage> {
   }
 
   Widget _buildBackButton(BuildContext context) {
+    final top = MediaQuery.of(context).padding.top;
     return Positioned(
-      top: MediaQuery.of(context).padding.top + 8,
+      top: top + 8,
       left: 12,
       child: GestureDetector(
         onTap: () => Navigator.of(context).pop(),
@@ -188,13 +189,17 @@ class _UvSensorPageState extends State<UVSensorPage> {
                       child: Center(
                         child: ElevatedButton.icon(
                           onPressed: () => _logEvidence(context),
-                          style: TerminalButtonStyles.Elevated.copyWith(
-                            backgroundColor:
-                                MaterialStateProperty.all(Colors.transparent),
-                            foregroundColor:
-                                MaterialStateProperty.all(TerminalColors.green),
-                            side: MaterialStateProperty.all(
-                              const BorderSide(color: TerminalColors.green),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: TerminalColors.green,
+                            textStyle: TerminalTextStyles.button,
+                            side: const BorderSide(color: TerminalColors.green),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
                             ),
                           ),
                           icon: const Icon(Icons.add),

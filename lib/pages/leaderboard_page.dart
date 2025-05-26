@@ -57,39 +57,52 @@ class _LeaderboardPageState extends State<LeaderboardPage>
 
         final leaders = snapshot.data!;
 
-        return ListView.builder(
-          itemCount: leaders.length,
-          itemBuilder: (context, index) {
-            final user = leaders[index];
-            final username = user['username'] ?? 'Unknown';
-            final coins = user['totalCoins'] ?? 0;
-            final entries = user['entriesLogged'] ?? 0;
-            final locations = user['locationsVisited'] ?? 0;
+        return LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: leaders.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final user = entry.value;
 
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(color: TerminalColors.green),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: TerminalColors.background,
-                  foregroundColor: TerminalColors.green,
-                  child: Text(
-                    '#${index + 1}',
-                    style: TerminalTextStyles.body,
-                  ),
+                    final username = user['username'] ?? 'Unknown';
+                    final coins = user['totalCoins'] ?? 0;
+                    final entries = user['entriesLogged'] ?? 0;
+                    final locations = user['locationsVisited'] ?? 0;
+
+                    return Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: TerminalColors.green),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: TerminalColors.background,
+                          foregroundColor: TerminalColors.green,
+                          child: Text(
+                            '#${index + 1}',
+                            style: TerminalTextStyles.body,
+                          ),
+                        ),
+                        title:
+                            Text(username, style: TerminalTextStyles.heading),
+                        subtitle: Text(
+                          "$coins ghost coins • $entries evidence • $locations locations",
+                          style: TerminalTextStyles.body,
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-                title: Text(username, style: TerminalTextStyles.heading),
-                subtitle: Text(
-                  "$coins ghost coins • $entries evidence • $locations locations",
-                  style: TerminalTextStyles.body,
-                ),
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -115,11 +128,13 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           tabs: _categories.map((cat) => Tab(text: cat["label"])).toList(),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: _categories
-            .map((cat) => buildLeaderboardTab(cat["field"]!))
-            .toList(),
+      body: SafeArea(
+        child: TabBarView(
+          controller: _tabController,
+          children: _categories
+              .map((cat) => buildLeaderboardTab(cat["field"]!))
+              .toList(),
+        ),
       ),
     );
   }

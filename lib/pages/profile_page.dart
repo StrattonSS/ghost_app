@@ -27,25 +27,40 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: TerminalColors.background,
         foregroundColor: TerminalColors.green,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Logged in as: ${user?.email ?? "Unknown"}',
-              style: TerminalTextStyles.body,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _logout(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: TerminalColors.green,
-                foregroundColor: TerminalColors.background,
-                textStyle: TerminalTextStyles.button,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Logged in as: ${user?.email ?? "Unknown"}',
+                        style: TerminalTextStyles.body,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () => _logout(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: TerminalColors.green,
+                          foregroundColor: TerminalColors.background,
+                          textStyle: TerminalTextStyles.button,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 14),
+                        ),
+                        child: const Text('Logout'),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: const Text('Logout'),
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -117,8 +117,10 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
             : null;
         _visualPosition = isAligned
             ? Offset(
-                Random().nextDouble() * 200 + 100,
-                Random().nextDouble() * 300 + 200,
+                Random().nextDouble() * MediaQuery.of(context).size.width * 0.6,
+                Random().nextDouble() *
+                    MediaQuery.of(context).size.height *
+                    0.4,
               )
             : null;
       });
@@ -162,82 +164,84 @@ class _ThermalVisionPageState extends State<ThermalVisionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TerminalColors.background,
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return Stack(
-              children: [
-                ColorFiltered(
-                  colorFilter: const ColorFilter.matrix([
-                    1.5, 0.0, 0.0, 0.0, 0.0, // red
-                    0.0, 1.2, 0.0, 0.0, 0.0, // green
-                    0.0, 0.0, 0.5, 0.0, 0.0, // blue
-                    0.0, 0.0, 0.0, 1.0, 0.0, // alpha
-                  ]),
-                  child: CameraPreview(_controller),
-                ),
-                if (_showColdVisuals &&
-                    _currentColdVisual != null &&
-                    _visualPosition != null)
-                  Positioned(
-                    left: _visualPosition!.dx,
-                    top: _visualPosition!.dy,
-                    child: Image.asset(
-                      _currentColdVisual!,
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.contain,
-                      color: Colors.cyanAccent.withOpacity(0.7),
-                      colorBlendMode: BlendMode.screen,
-                    ),
+      body: SafeArea(
+        child: FutureBuilder<void>(
+          future: _initializeControllerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return Stack(
+                children: [
+                  ColorFiltered(
+                    colorFilter: const ColorFilter.matrix([
+                      1.5, 0.0, 0.0, 0.0, 0.0, // red
+                      0.0, 1.2, 0.0, 0.0, 0.0, // green
+                      0.0, 0.0, 0.5, 0.0, 0.0, // blue
+                      0.0, 0.0, 0.0, 1.0, 0.0, // alpha
+                    ]),
+                    child: CameraPreview(_controller),
                   ),
-                const Positioned(
-                  bottom: 20,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Text(
-                      ">> Thermal Vision Active",
-                      style: TerminalTextStyles.muted,
+                  if (_showColdVisuals &&
+                      _currentColdVisual != null &&
+                      _visualPosition != null)
+                    Positioned(
+                      left: _visualPosition!.dx,
+                      top: _visualPosition!.dy,
+                      child: Image.asset(
+                        _currentColdVisual!,
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.contain,
+                        color: Colors.cyanAccent.withOpacity(0.7),
+                        colorBlendMode: BlendMode.screen,
+                      ),
                     ),
-                  ),
-                ),
-                if (_showColdVisuals && _currentColdVisual != null)
-                  Positioned(
-                    bottom: 70,
+                  const Positioned(
+                    bottom: 20,
                     left: 0,
                     right: 0,
                     child: Center(
-                      child: ElevatedButton(
-                        onPressed: () => _logEvidence(
-                          _currentColdVisual!
-                              .split('/')
-                              .last
-                              .replaceAll('.png', ''),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: TerminalColors.green,
-                          foregroundColor: TerminalColors.background,
-                          textStyle: TerminalTextStyles.button,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text("Log Thermal Evidence"),
+                      child: Text(
+                        ">> Thermal Vision Active",
+                        style: TerminalTextStyles.muted,
                       ),
                     ),
                   ),
-              ],
-            );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(color: TerminalColors.green),
-            );
-          }
-        },
+                  if (_showColdVisuals && _currentColdVisual != null)
+                    Positioned(
+                      bottom: 70,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () => _logEvidence(
+                            _currentColdVisual!
+                                .split('/')
+                                .last
+                                .replaceAll('.png', ''),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: TerminalColors.green,
+                            foregroundColor: TerminalColors.background,
+                            textStyle: TerminalTextStyles.button,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text("Log Thermal Evidence"),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(color: TerminalColors.green),
+              );
+            }
+          },
+        ),
       ),
     );
   }

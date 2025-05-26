@@ -69,52 +69,59 @@ class _SubmitLocationPageState extends State<SubmitLocationPage> {
         title:
             const Text(">> SUBMIT_LOC.TXT", style: TerminalTextStyles.heading),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: _controllers.entries.map((entry) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: TextFormField(
-                  controller: entry.value,
-                  style: TerminalTextStyles.body,
-                  cursorColor: TerminalColors.green,
-                  decoration: InputDecoration(
-                    labelText: entry.key
-                        .replaceAll(RegExp(r'([a-z])([A-Z])'), r'$1 $2')
-                        .capitalize(),
-                    labelStyle: TerminalTextStyles.body.copyWith(
-                      color: TerminalColors.green.withOpacity(0.7),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: _controllers.entries.map((entry) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: TextFormField(
+                        controller: entry.value,
+                        style: TerminalTextStyles.body,
+                        cursorColor: TerminalColors.green,
+                        decoration: InputDecoration(
+                          labelText: entry.key
+                              .replaceAll(RegExp(r'([a-z])([A-Z])'), r'$1 $2')
+                              .capitalize(),
+                          labelStyle: TerminalTextStyles.body.copyWith(
+                            color: TerminalColors.green.withOpacity(0.7),
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: TerminalColors.green),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: TerminalColors.green),
+                          ),
+                        ),
+                        validator: (value) =>
+                            value == null || value.isEmpty ? "Required" : null,
+                      ),
+                    );
+                  }).toList()
+                    ..add(
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: ElevatedButton(
+                          onPressed: _submit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: TerminalColors.green,
+                            foregroundColor: Colors.black,
+                            textStyle: TerminalTextStyles.body,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text("Submit Location"),
+                        ),
+                      ),
                     ),
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: TerminalColors.green),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: TerminalColors.green),
-                    ),
-                  ),
-                  validator: (value) =>
-                      value == null || value.isEmpty ? "Required" : null,
-                ),
-              );
-            }).toList()
-              ..add(
-                Padding(
-                  padding: const EdgeInsets.only(top: 12.0),
-                  child: ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: TerminalColors.green,
-                      foregroundColor: Colors.black,
-                      textStyle: TerminalTextStyles.body,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text("Submit Location"),
-                  ),
                 ),
               ),
+            ),
           ),
         ),
       ),

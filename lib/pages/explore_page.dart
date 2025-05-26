@@ -23,10 +23,23 @@ class ExplorePage extends StatelessWidget {
           )
         ],
       ),
-      body: const Center(
-        child: Text(
-          ">> Haunted locations will be listed here soon.",
-          style: TerminalTextStyles.body,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Center(
+                  child: Text(
+                    ">> Haunted locations will be listed here soon.",
+                    style: TerminalTextStyles.body,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(

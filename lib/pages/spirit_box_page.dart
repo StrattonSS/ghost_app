@@ -110,72 +110,76 @@ class _SpiritBoxPageState extends State<SpiritBoxPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: TerminalColors.background,
-      body: Stack(
-        children: [
-          const AnimatedBackground(),
-          Column(
-            children: [
-              const SizedBox(height: 60),
-              const Center(
-                child: Text(
-                  'SPIRIT BOX',
-                  style: TerminalTextStyles.heading,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: TerminalColors.backgroundLight,
-                  border: Border.all(color: TerminalColors.green),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    _currentFreqLabel,
-                    style: TerminalTextStyles.body.copyWith(fontSize: 26),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            const AnimatedBackground(),
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  const Center(
+                    child:
+                        Text('SPIRIT BOX', style: TerminalTextStyles.heading),
                   ),
-                ),
-              ),
-              const SizedBox(height: 40),
-              const Divider(height: 1, color: Colors.transparent),
-              const SizedBox(height: 60),
-              Icon(
-                LucideIcons.ghost,
-                size: 60,
-                color: _responseDetected
-                    ? TerminalColors.green
-                    : TerminalColors.faded,
-                shadows: [
-                  if (_responseDetected)
-                    const Shadow(color: TerminalColors.green, blurRadius: 20),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: TerminalColors.backgroundLight,
+                      border: Border.all(color: TerminalColors.green),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        _currentFreqLabel,
+                        style: TerminalTextStyles.body.copyWith(fontSize: 26),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 60),
+                  Icon(
+                    LucideIcons.ghost,
+                    size: 60,
+                    color: _responseDetected
+                        ? TerminalColors.green
+                        : TerminalColors.faded,
+                    shadows: [
+                      if (_responseDetected)
+                        const Shadow(
+                            color: TerminalColors.green, blurRadius: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: _canLog ? _logEvidence : null,
+                    icon: const Icon(Icons.add),
+                    label: const Text("Log Response"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: TerminalColors.green,
+                      side: const BorderSide(color: TerminalColors.green),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      textStyle: TerminalTextStyles.body,
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _canLog ? _logEvidence : null,
-                icon: const Icon(Icons.add),
-                label: const Text("Log Response"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: TerminalColors.green,
-                  side: const BorderSide(color: TerminalColors.green),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  textStyle: TerminalTextStyles.body,
-                ),
-              ),
-            ],
-          ),
-          _buildGlobalBackButton(),
-        ],
+            ),
+            _buildGlobalBackButton(),
+          ],
+        ),
       ),
     );
   }

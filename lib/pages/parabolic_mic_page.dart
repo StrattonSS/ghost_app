@@ -146,6 +146,9 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final radarSize = screenWidth * 0.6;
+
     return Scaffold(
       backgroundColor: TerminalColors.background,
       appBar: AppBar(
@@ -154,43 +157,49 @@ class _ParabolicMicPageState extends State<ParabolicMicPage>
         backgroundColor: TerminalColors.background,
         foregroundColor: TerminalColors.green,
       ),
-      body: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              width: 250,
-              height: 250,
-              child: CustomPaint(
-                painter: RadarPainter(_radarController),
-              ),
-            ),
-            const Positioned(
-              bottom: 100,
-              child: Text(
-                "Rotate device to find the signal...",
-                style: TerminalTextStyles.body,
-              ),
-            ),
-            Positioned(
-              bottom: 30,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: _isPlayingAudio ? () => _logEvidence('evp') : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isPlayingAudio
-                        ? TerminalColors.green
-                        : TerminalColors.green.withOpacity(0.3),
-                    foregroundColor: TerminalColors.background,
-                    textStyle: TerminalTextStyles.button,
-                  ),
-                  child: const Text("Log Evidence"),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: radarSize,
+                      height: radarSize,
+                      child: CustomPaint(
+                        painter: RadarPainter(_radarController),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    const Text(
+                      "Rotate device to find the signal...",
+                      style: TerminalTextStyles.body,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 30),
+                    ElevatedButton(
+                      onPressed:
+                          _isPlayingAudio ? () => _logEvidence('evp') : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isPlayingAudio
+                            ? TerminalColors.green
+                            : TerminalColors.green.withOpacity(0.3),
+                        foregroundColor: TerminalColors.background,
+                        textStyle: TerminalTextStyles.button,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 14),
+                      ),
+                      child: const Text("Log Evidence"),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

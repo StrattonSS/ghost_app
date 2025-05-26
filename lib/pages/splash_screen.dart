@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'dart:async';
-
-import 'register_user.dart';
-import 'terminal_theme.dart';
+import 'home_page.dart'; // Update path if needed
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,39 +11,44 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
-  bool _animationReady = false;
 
   @override
   void initState() {
     super.initState();
 
-    _controller =
-        VideoPlayerController.asset('assets/splash/GHOST_animation.mp4')
-          ..initialize().then((_) {
-            _controller.setLooping(true);
-            _controller.play();
-            setState(() => _animationReady = true);
-          });
+    _controller = VideoPlayerController.asset('assets/ghost_animation.mp4')
+      ..initialize().then((_) {
+        if (!mounted) return;
 
-    final player1 = AudioPlayer();
-    final player2 = AudioPlayer();
+        setState(() {});
+        _controller.play();
+        _controller.setLooping(false);
+        _controller.addListener(_checkVideoEnd);
+      });
+  }
 
-    player1.play(AssetSource('splash/startup1.mp3'));
-    Future.delayed(const Duration(seconds: 2), () {
-      player2.play(AssetSource('splash/startup2.mp3'));
-    });
+  void _checkVideoEnd() {
+    if (_controller.value.position >= _controller.value.duration &&
+        !_controller.value.isPlaying &&
+        mounted) {
+      _navigateToNext();
+    }
+  }
 
-    Future.delayed(const Duration(seconds: 10), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const RegisterUserScreen()),
-        );
-      }
-    });
+  void _navigateToNext() {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const HomePage(),
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 800),
+      ),
+    );
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_checkVideoEnd);
     _controller.dispose();
     super.dispose();
   }
@@ -55,14 +56,29 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TerminalColors.background,
-      body: Center(
-        child: _animationReady
-            ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: _controller.value.isInitialized
+            ? Center(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: FittedBox(
+                        fit: BoxFit.contain,
+                        child: SizedBox(
+                          width: _controller.value.size.width,
+                          height: _controller.value.size.height,
+                          child: VideoPlayer(_controller),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               )
-            : const CircularProgressIndicator(color: TerminalColors.green),
+            : const Center(
+                child: CircularProgressIndicator(color: Colors.greenAccent),
+              ),
       ),
     );
   }

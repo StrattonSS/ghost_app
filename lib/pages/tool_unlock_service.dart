@@ -28,8 +28,9 @@ class ToolUnlockService {
     // Set coin earned flag
     await prefs.setBool(coinKey, true);
 
-    // Debug print
+    // Debug output
     print(
-        'Logged evidence: $key${locationName != null ? ' @ $locationName' : ''}');
+      'Logged evidence: $key${locationName != null ? ' @ $locationName' : ''}',
+    );
   }
 }

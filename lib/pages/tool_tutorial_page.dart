@@ -15,8 +15,12 @@ class ToolTutorialPage extends StatelessWidget {
     required String description,
     required VoidCallback onTap,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
+        vertical: 8,
+      ),
       decoration: BoxDecoration(
         border: Border.all(color: theme.TerminalColors.green),
         borderRadius: BorderRadius.circular(12),
@@ -38,9 +42,13 @@ class ToolTutorialPage extends StatelessWidget {
     );
   }
 
-  Widget buildTutorialHeader() {
+  Widget buildTutorialHeader(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      margin: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
+        vertical: 16,
+      ),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: theme.TerminalColors.green.withOpacity(0.1),
@@ -63,12 +71,14 @@ class ToolTutorialPage extends StatelessWidget {
       backgroundColor: theme.TerminalColors.background,
       appBar: AppBar(
         backgroundColor: theme.TerminalColors.background,
-        title: const Text('>> TOOL_TUTORIAL.EXE',
-            style: theme.TerminalTextStyles.heading),
+        title: const Text(
+          '>> TOOL_TUTORIAL.EXE',
+          style: theme.TerminalTextStyles.heading,
+        ),
       ),
       body: ListView(
         children: [
-          buildTutorialHeader(),
+          buildTutorialHeader(context),
           buildToolTile(
             context: context,
             title: '📡 EMF Reader',

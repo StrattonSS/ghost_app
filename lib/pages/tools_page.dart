@@ -16,8 +16,12 @@ class ToolsPage extends StatelessWidget {
     required String description,
     required VoidCallback onTap,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
+        vertical: 8,
+      ),
       decoration: BoxDecoration(
         border: Border.all(color: TerminalColors.green),
         borderRadius: BorderRadius.circular(12),

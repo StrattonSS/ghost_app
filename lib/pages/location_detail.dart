@@ -113,23 +113,31 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
           ? const Center(
               child: CircularProgressIndicator(color: TerminalColors.green),
             )
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: DefaultTextStyle(
-                style: TerminalTextStyles.body,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("> City: ${locationData!['city']}"),
-                    Text("> State: ${locationData!['state']}"),
-                    if (locationData!['type'] != null)
-                      Text("> Type: ${locationData!['type']}"),
-                    if (locationData!['activity'] != null)
-                      Text("> Activity: ${locationData!['activity']}"),
-                    const SizedBox(height: 20),
-                    if (locationData!['description'] != null)
-                      Text(locationData!['description']),
-                  ],
+          : SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints(minHeight: constraints.maxHeight),
+                    child: DefaultTextStyle(
+                      style: TerminalTextStyles.body,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("> City: ${locationData!['city']}"),
+                          Text("> State: ${locationData!['state']}"),
+                          if (locationData!['type'] != null)
+                            Text("> Type: ${locationData!['type']}"),
+                          if (locationData!['activity'] != null)
+                            Text("> Activity: ${locationData!['activity']}"),
+                          const SizedBox(height: 20),
+                          if (locationData!['description'] != null)
+                            Text(locationData!['description']),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

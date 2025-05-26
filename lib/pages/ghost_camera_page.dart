@@ -108,102 +108,120 @@ class _GhostCameraPageState extends State<GhostCameraPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final scaleFactor = screenWidth < 400 ? 0.85 : 1.0;
+
     return Scaffold(
       backgroundColor: TerminalColors.background,
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return Stack(
-              children: [
-                _capturedImagePath == null
-                    ? CameraPreview(_controller)
-                    : Image.file(
-                        File(_capturedImagePath!),
-                        width: double.infinity,
+      body: SafeArea(
+        child: FutureBuilder<void>(
+          future: _initializeControllerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return Stack(
+                children: [
+                  _capturedImagePath == null
+                      ? CameraPreview(_controller)
+                      : Image.file(
+                          File(_capturedImagePath!),
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                  if (_ghostOverlayUsed != null)
+                    Positioned.fill(
+                      child: Image.asset(
+                        _ghostOverlayUsed!,
                         fit: BoxFit.cover,
+                        color: Colors.white.withOpacity(0.5),
+                        colorBlendMode: BlendMode.plus,
                       ),
-                if (_ghostOverlayUsed != null)
-                  Positioned.fill(
-                    child: Image.asset(
-                      _ghostOverlayUsed!,
-                      fit: BoxFit.cover,
-                      color: Colors.white.withOpacity(0.5),
-                      colorBlendMode: BlendMode.plus,
                     ),
-                  ),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: TerminalColors.green, width: 2),
-                  ),
-                ),
-                Positioned(
-                  top: 20,
-                  left: 20,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  Container(
                     decoration: BoxDecoration(
-                      color: TerminalColors.background,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      "REC",
-                      style: TerminalTextStyles.label.copyWith(
-                        color: TerminalColors.red,
-                      ),
+                      border: Border.all(color: TerminalColors.green, width: 2),
                     ),
                   ),
-                ),
-                Positioned(
-                  bottom: 100,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: TerminalColors.accent,
-                        foregroundColor: TerminalColors.text,
-                        textStyle: TerminalTextStyles.button,
-                      ),
-                      onPressed: _takePicture,
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text("Capture"),
-                    ),
-                  ),
-                ),
-                if (_ghostOverlayUsed != null)
                   Positioned(
-                    bottom: 30,
+                    top: 20,
+                    left: 20,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: TerminalColors.background,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        "REC",
+                        style: TerminalTextStyles.label.copyWith(
+                          color: TerminalColors.red,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 100 * scaleFactor,
                     left: 0,
                     right: 0,
                     child: Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _ghostOverlayUsed = null;
-                            _capturedImagePath = null;
-                          });
-                        },
+                      child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: TerminalColors.backgroundLight,
+                          backgroundColor: TerminalColors.accent,
                           foregroundColor: TerminalColors.text,
-                          textStyle: TerminalTextStyles.button,
+                          textStyle: TerminalTextStyles.button.copyWith(
+                            fontSize: 16 * scaleFactor,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24 * scaleFactor,
+                            vertical: 12 * scaleFactor,
+                          ),
                         ),
-                        child: const Text("Reset View"),
+                        onPressed: _takePicture,
+                        icon: Icon(Icons.camera_alt, size: 20 * scaleFactor),
+                        label: const Text("Capture"),
                       ),
                     ),
                   ),
-              ],
-            );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: TerminalColors.green,
-              ),
-            );
-          }
-        },
+                  if (_ghostOverlayUsed != null)
+                    Positioned(
+                      bottom: 30 * scaleFactor,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _ghostOverlayUsed = null;
+                              _capturedImagePath = null;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: TerminalColors.backgroundLight,
+                            foregroundColor: TerminalColors.text,
+                            textStyle: TerminalTextStyles.button.copyWith(
+                              fontSize: 16 * scaleFactor,
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24 * scaleFactor,
+                              vertical: 12 * scaleFactor,
+                            ),
+                          ),
+                          child: const Text("Reset View"),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: TerminalColors.green,
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }

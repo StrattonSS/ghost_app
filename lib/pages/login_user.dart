@@ -71,11 +71,11 @@ class _LoginUserScreenState extends State<LoginUserScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: TerminalColors.background,
-            enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: TerminalColors.green),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: TerminalColors.green),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: TerminalColors.green),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: TerminalColors.green),
             ),
           ),
         ),
@@ -93,33 +93,43 @@ class _LoginUserScreenState extends State<LoginUserScreen> {
         backgroundColor: TerminalColors.background,
         foregroundColor: TerminalColors.green,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              _buildInputField('Email', _emailController),
-              const SizedBox(height: 16),
-              _buildInputField('Password', _passwordController, obscure: true),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _loading ? null : _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TerminalColors.green,
-                  foregroundColor: TerminalColors.background,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 24,
-                  ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildInputField('Email', _emailController),
+                    const SizedBox(height: 16),
+                    _buildInputField('Password', _passwordController,
+                        obscure: true),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _loading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: TerminalColors.green,
+                        foregroundColor: TerminalColors.background,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 24,
+                        ),
+                      ),
+                      child: _loading
+                          ? const CircularProgressIndicator(
+                              color: TerminalColors.background,
+                            )
+                          : const Text('>> LOGIN',
+                              style: TerminalTextStyles.button),
+                    ),
+                  ],
                 ),
-                child: _loading
-                    ? const CircularProgressIndicator(
-                        color: TerminalColors.background,
-                      )
-                    : const Text('>> LOGIN', style: TerminalTextStyles.button),
               ),
-            ],
+            ),
           ),
         ),
       ),

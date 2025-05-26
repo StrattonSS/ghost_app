@@ -65,13 +65,31 @@ class _JournalPageState extends State<JournalPage>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildFavoritesTab(),
-          _buildVisitedTab(),
-        ],
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => TabBarView(
+            controller: _tabController,
+            children: [
+              _buildResponsiveTab(_buildFavoritesTab()),
+              _buildResponsiveTab(_buildVisitedTab()),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildResponsiveTab(Widget content) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(12),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: content,
+          ),
+        );
+      },
     );
   }
 
@@ -85,16 +103,14 @@ class _JournalPageState extends State<JournalPage>
       );
     }
 
-    return ListView.builder(
-      itemCount: favorites.length,
-      itemBuilder: (context, index) {
-        final location = favorites[index];
+    return Column(
+      children: favorites.map((location) {
         return _terminalCard(
           title: location['name'],
           subtitle: '${location['city']}, ${location['state']}',
           trailing: '[★ FAVORITED]',
         );
-      },
+      }).toList(),
     );
   }
 
@@ -108,14 +124,12 @@ class _JournalPageState extends State<JournalPage>
       );
     }
 
-    return ListView.builder(
-      itemCount: visited.length,
-      itemBuilder: (context, index) {
-        final location = visited[index];
+    return Column(
+      children: visited.map((location) {
         final tools = Map<String, dynamic>.from(location['toolsUsed'] ?? {});
 
         return Container(
-          margin: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             border: Border.all(color: TerminalColors.green),
@@ -159,7 +173,7 @@ class _JournalPageState extends State<JournalPage>
             ],
           ),
         );
-      },
+      }).toList(),
     );
   }
 
@@ -169,7 +183,7 @@ class _JournalPageState extends State<JournalPage>
     String? trailing,
   }) {
     return Container(
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         border: Border.all(color: TerminalColors.green),

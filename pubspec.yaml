@@ -39,11 +39,11 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/splash/GHOST_animation.mp4
     - assets/splash/startup1.mp3
     - assets/splash/startup2.mp3
     - assets/map_style_dark.json
     - assets/sounds/static.wav
+    - assets/ghost_animation.mp4  # ✅ Added for splash video support
 
   fonts:
     - family: Glasstty
