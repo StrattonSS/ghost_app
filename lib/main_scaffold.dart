@@ -15,17 +15,17 @@ class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    HomePage(),
-    JournalPage(),
-    ToolsPage(),
-    ProfilePage(), // ✅ Replaced placeholder with real page
+    const HomePage(),
+    const JournalPage(),
+    const ToolsPage(),
+    const ProfilePage(),
   ];
 
   final List<BottomNavigationBarItem> _navItems = [
-    BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Home'),
-    BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Journal'),
-    BottomNavigationBarItem(icon: Icon(Icons.build), label: 'Tools'),
-    BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+    const BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Home'),
+    const BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Journal'),
+    const BottomNavigationBarItem(icon: Icon(Icons.build), label: 'Tools'),
+    const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
   ];
 
   @override

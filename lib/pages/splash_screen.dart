@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'home_page.dart'; // Update path if needed
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,44 +10,35 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
+  bool _navigated = false;
 
   @override
   void initState() {
     super.initState();
-
     _controller = VideoPlayerController.asset('assets/ghost_animation.mp4')
       ..initialize().then((_) {
-        if (!mounted) return;
-
+        debugPrint("✅ Video initialized");
         setState(() {});
         _controller.play();
-        _controller.setLooping(false);
-        _controller.addListener(_checkVideoEnd);
+
+        // Only start listening AFTER it's initialized
+        _controller.addListener(() {
+          if (_controller.value.position >= _controller.value.duration &&
+              !_navigated) {
+            _navigated = true;
+            debugPrint("✅ Video completed, navigating to /auth");
+            Navigator.of(context).pushReplacementNamed('/auth');
+          }
+        });
+      }).catchError((error) {
+        debugPrint("❌ Error initializing video: $error");
+        // Fallback if video fails
+        Navigator.of(context).pushReplacementNamed('/auth');
       });
-  }
-
-  void _checkVideoEnd() {
-    if (_controller.value.position >= _controller.value.duration &&
-        !_controller.value.isPlaying &&
-        mounted) {
-      _navigateToNext();
-    }
-  }
-
-  void _navigateToNext() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const HomePage(),
-        transitionsBuilder: (_, animation, __, child) =>
-            FadeTransition(opacity: animation, child: child),
-        transitionDuration: const Duration(milliseconds: 800),
-      ),
-    );
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_checkVideoEnd);
     _controller.dispose();
     super.dispose();
   }
@@ -57,28 +47,13 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
+      body: Center(
         child: _controller.value.isInitialized
-            ? Center(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: SizedBox(
-                          width: _controller.value.size.width,
-                          height: _controller.value.size.height,
-                          child: VideoPlayer(_controller),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
               )
-            : const Center(
-                child: CircularProgressIndicator(color: Colors.greenAccent),
-              ),
+            : const CircularProgressIndicator(),
       ),
     );
   }

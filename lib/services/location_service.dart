@@ -31,6 +31,11 @@ class LocationService {
         .where('city', isEqualTo: city)
         .get();
 
-    return snapshot.docs.map((doc) => doc.data()).toList();
+    return snapshot.docs
+        .map((doc) => {
+              'id': doc.id,
+              ...doc.data() as Map<String, dynamic>,
+            })
+        .toList();
   }
 }
