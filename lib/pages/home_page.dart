@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ghost_app/pages/terminal_theme.dart' as terminal_theme;
 import 'package:ghost_app/services/location_service.dart';
-import 'package:ghost_app/widgets/location_tile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,85 +13,141 @@ class _HomePageState extends State<HomePage> {
   String? selectedState;
   String? selectedCity;
   String searchQuery = '';
-  bool showActivityFilters = false;
 
   List<String> states = [];
   List<String> cities = [];
+  Map<String, List<String>> citiesByState = {};
   List<Map<String, dynamic>> allLocations = [];
   List<Map<String, dynamic>> filteredLocations = [];
-
-  List<String> selectedActivities = [];
-  final List<String> allActivities = [
-    'Apparition',
-    'Cold Spot',
-    'EMF Reading',
-    'Voices',
-    'Disembodied Sound',
-    'Object Moved',
-  ];
 
   @override
   void initState() {
     super.initState();
-    _loadStates();
+    loadData();
   }
 
-  Future<void> _loadStates() async {
-    final fetchedStates = await LocationService.getStates();
-    setState(() {
-      states = fetchedStates;
-    });
-  }
+  Future<void> loadData() async {
+    final locations = await LocationService.getAllLocations();
+    final stateSet = <String>{};
+    final Map<String, Set<String>> cityMap = {};
 
-  Future<void> _loadCities(String state) async {
-    final fetchedCities = await LocationService.getCities(state);
-    setState(() {
-      cities = fetchedCities;
-      selectedCity = null;
-    });
-  }
-
-  Future<void> _loadLocations() async {
-    if (selectedState != null && selectedCity != null) {
-      final locations =
-          await LocationService.getLocations(selectedState!, selectedCity!);
-      setState(() {
-        allLocations = locations;
-        _applyFilters();
-      });
+    for (var loc in locations) {
+      final state = loc['state'] ?? '';
+      final city = loc['city'] ?? '';
+      if (state.isNotEmpty && city.isNotEmpty) {
+        stateSet.add(state);
+        cityMap.putIfAbsent(state, () => <String>{}).add(city);
+      }
     }
-  }
 
-  void _applyFilters() {
-    final query = searchQuery.toLowerCase();
+    final sortedStates = stateSet.toList()..sort();
+    final mappedCities = {
+      for (var entry in cityMap.entries)
+        entry.key: (entry.value.toList()..sort())
+    };
 
     setState(() {
-      filteredLocations = allLocations.where((location) {
-        final matchesSearch = location.values
-            .any((value) => value.toString().toLowerCase().contains(query));
+      allLocations = locations;
+      states = ['Select a State', ...sortedStates];
+      citiesByState = mappedCities;
+      cities = ['Select a City'];
+    });
 
-        final matchesActivity = selectedActivities.isEmpty ||
-            selectedActivities.any((activity) =>
-                location['activity']
-                    ?.toString()
-                    .toLowerCase()
-                    .contains(activity.toLowerCase()) ??
-                false);
+    filterLocations();
+  }
 
-        return matchesSearch && matchesActivity;
+  void filterLocations() {
+    setState(() {
+      filteredLocations = allLocations.where((loc) {
+        final query = searchQuery.toLowerCase();
+
+        final name = (loc['name'] ?? '').toString().toLowerCase();
+        final city = (loc['city'] ?? '').toString().toLowerCase();
+        final state = (loc['state'] ?? '').toString().toLowerCase();
+        final description = (loc['description'] ?? '').toString().toLowerCase();
+        final activity = (loc['activity'] ?? '').toString().toLowerCase();
+
+        final matchState =
+            selectedState == null || loc['state'] == selectedState;
+        final matchCity = selectedCity == null || loc['city'] == selectedCity;
+
+        final matchesSearch = query.isEmpty ||
+            name.contains(query) ||
+            city.contains(query) ||
+            state.contains(query) ||
+            description.contains(query) ||
+            activity.contains(query);
+
+        return matchState && matchCity && matchesSearch;
       }).toList();
     });
   }
 
-  void _toggleActivity(String activity) {
-    setState(() {
-      if (selectedActivities.contains(activity)) {
-        selectedActivities.remove(activity);
-      } else {
-        selectedActivities.add(activity);
-      }
-      _applyFilters();
-    });
+  Widget buildStyledDropdown({
+    required String hint,
+    required String? selected,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        border:
+            Border.all(color: terminal_theme.TerminalColors.green, width: 1.5),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: DropdownButton<String>(
+        isExpanded: true,
+        value: selected != null && items.contains(selected) ? selected : null,
+        hint: Text(hint, style: terminal_theme.TerminalTextStyles.body),
+        dropdownColor: Colors.black,
+        iconEnabledColor: terminal_theme.TerminalColors.green,
+        underline: const SizedBox.shrink(),
+        style: terminal_theme.TerminalTextStyles.body,
+        items: items
+            .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+            .toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget buildLocationTile(Map<String, dynamic> location) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/location_detail',
+          arguments: location['id'],
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+              color: terminal_theme.TerminalColors.green, width: 1.5),
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.black,
+        ),
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              location['name'] ?? 'Unknown',
+              style: terminal_theme.TerminalTextStyles.heading,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${location['city']}, ${location['state']}',
+              style: terminal_theme.TerminalTextStyles.body,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -100,174 +155,82 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: terminal_theme.TerminalColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(12.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 🔍 Search bar
               TextField(
                 style: terminal_theme.TerminalTextStyles.body,
-                cursorColor: terminal_theme.TerminalColors.green,
                 decoration: InputDecoration(
-                  hintText: 'Search haunted locations...',
-                  hintStyle: terminal_theme.TerminalTextStyles.muted,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                  border: const OutlineInputBorder(),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: terminal_theme.TerminalColors.green),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: terminal_theme.TerminalColors.green),
-                  ),
-                ),
-                onChanged: (value) {
-                  searchQuery = value;
-                  _applyFilters();
-                },
-              ),
-              const SizedBox(height: 12),
-
-              // ✅ Activity Dropdown-style Filter Toggle
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    showActivityFilters = !showActivityFilters;
-                  });
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                  decoration: BoxDecoration(
-                    border:
-                        Border.all(color: terminal_theme.TerminalColors.green),
+                  hintText: 'Search by name or description...',
+                  hintStyle: terminal_theme.TerminalTextStyles.body,
+                  filled: true,
+                  fillColor: Colors.black,
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
-                    color: terminal_theme.TerminalColors.backgroundLight,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        selectedActivities.isEmpty
-                            ? 'Filter by Activity'
-                            : 'Activity Filters (${selectedActivities.length})',
-                        style: terminal_theme.TerminalTextStyles.body,
-                      ),
-                      Icon(
-                        showActivityFilters
-                            ? Icons.expand_less
-                            : Icons.expand_more,
-                        color: terminal_theme.TerminalColors.green,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (showActivityFilters)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: allActivities.map((activity) {
-                    return FilterChip(
-                      label: Text(activity,
-                          style: terminal_theme.TerminalTextStyles.body),
-                      selected: selectedActivities.contains(activity),
-                      onSelected: (_) => _toggleActivity(activity),
-                      selectedColor: terminal_theme.TerminalColors.green,
-                      backgroundColor:
-                          terminal_theme.TerminalColors.backgroundLight,
-                      checkmarkColor: Colors.black,
-                    );
-                  }).toList(),
-                ),
-              const SizedBox(height: 12),
-
-              // 🏙️ State Dropdown
-              DropdownButton<String>(
-                value: selectedState,
-                isExpanded: true,
-                dropdownColor: terminal_theme.TerminalColors.background,
-                style: terminal_theme.TerminalTextStyles.body,
-                hint: const Text("Select a state",
-                    style: terminal_theme.TerminalTextStyles.body),
-                items: states.map((String state) {
-                  return DropdownMenuItem<String>(
-                    value: state,
-                    child: Text(state),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedState = value;
-                    selectedCity = null;
-                    cities = [];
-                    allLocations = [];
-                    filteredLocations = [];
-                    selectedActivities = [];
-                  });
-                  _loadCities(value!);
-                },
-              ),
-              const SizedBox(height: 10),
-
-              // 🏙️ City Dropdown
-              if (cities.isNotEmpty)
-                DropdownButton<String>(
-                  value: selectedCity,
-                  isExpanded: true,
-                  dropdownColor: terminal_theme.TerminalColors.background,
-                  style: terminal_theme.TerminalTextStyles.body,
-                  hint: const Text("Select a city",
-                      style: terminal_theme.TerminalTextStyles.body),
-                  items: cities.map((String city) {
-                    return DropdownMenuItem<String>(
-                      value: city,
-                      child: Text(city),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedCity = value;
-                      selectedActivities = [];
-                    });
-                    _loadLocations();
-                  },
-                ),
-              const SizedBox(height: 20),
-
-              // 📍 Results List
-              if (filteredLocations.isNotEmpty)
-                ListView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: filteredLocations.length,
-                  itemBuilder: (context, index) {
-                    final location = filteredLocations[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/location_detail',
-                          arguments: location['id'],
-                        );
-                      },
-                      child: LocationTile(location: location),
-                    );
-                  },
-                )
-              else if (selectedState != null && selectedCity != null)
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(
-                    child: Text(
-                      "No haunted locations found.",
-                      style: terminal_theme.TerminalTextStyles.body,
+                    borderSide: BorderSide(
+                      color: terminal_theme.TerminalColors.green,
+                      width: 1.5,
                     ),
                   ),
                 ),
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value;
+                    filterLocations();
+                  });
+                },
+              ),
+              buildStyledDropdown(
+                hint: 'Select State',
+                selected: selectedState,
+                items: states,
+                onChanged: (value) {
+                  setState(() {
+                    selectedState = (value == 'Select a State') ? null : value;
+                    selectedCity = null;
+                    cities = ['Select a City'];
+                    if (selectedState != null &&
+                        citiesByState.containsKey(selectedState)) {
+                      cities.addAll(citiesByState[selectedState]!);
+                    }
+                    filterLocations();
+                  });
+                },
+              ),
+              buildStyledDropdown(
+                hint: 'Select City',
+                selected: selectedCity,
+                items: cities,
+                onChanged: (value) {
+                  setState(() {
+                    selectedCity = (value == 'Select a City') ? null : value;
+                    filterLocations();
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: filteredLocations.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No matching locations found.',
+                          style: terminal_theme.TerminalTextStyles.body,
+                        ),
+                      )
+                    : GridView.builder(
+                        itemCount: filteredLocations.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.95,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                        itemBuilder: (context, index) =>
+                            buildLocationTile(filteredLocations[index]),
+                      ),
+              ),
             ],
           ),
         ),

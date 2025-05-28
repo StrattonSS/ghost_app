@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ghost_app/pages/terminal_theme.dart';
+import 'package:ghost_app/pages/terminal_theme.dart' as terminal_theme;
 
 class LocationTile extends StatelessWidget {
   final Map<String, dynamic> location;
@@ -9,30 +9,23 @@ class LocationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: TerminalColors.transparentGreen,
-      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+      color: Colors.black,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
         title: Text(
-          location['name'] ?? 'Unknown Location',
-          style: TerminalTextStyles.heading,
+          location['name'] ?? 'Unknown',
+          style: terminal_theme.TerminalTextStyles.body,
         ),
         subtitle: Text(
-          location['shortDescription'] ?? '',
-          style: TerminalTextStyles.body.copyWith(fontSize: 16),
+          '${location['city']}, ${location['state']}',
+          style: terminal_theme.TerminalTextStyles.body,
         ),
         onTap: () {
-          if (location['id'] != null) {
-            Navigator.pushNamed(
-              context,
-              '/location_detail',
-              arguments: {
-                'id': location['id'], // Ensure this exists in the map
-                ...location, // Pass the rest of the fields too
-              },
-            );
-          } else {
-            debugPrint('Location missing ID: $location');
-          }
+          Navigator.pushNamed(
+            context,
+            '/location_detail',
+            arguments: location,
+          );
         },
       ),
     );

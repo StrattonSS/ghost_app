@@ -1,41 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LocationService {
-  static final _firestore = FirebaseFirestore.instance;
+  static final _locationsCollection =
+      FirebaseFirestore.instance.collection('locations');
 
-  static Future<List<String>> getStates() async {
-    final snapshot = await _firestore.collection('locations').get();
-    final states =
-        snapshot.docs.map((doc) => doc['state'] as String).toSet().toList();
-    states.sort();
-    return states;
-  }
-
-  static Future<List<String>> getCities(String state) async {
-    final snapshot = await _firestore
-        .collection('locations')
-        .where('state', isEqualTo: state)
-        .get();
-
-    final cities =
-        snapshot.docs.map((doc) => doc['city'] as String).toSet().toList();
-    cities.sort();
-    return cities;
-  }
-
-  static Future<List<Map<String, dynamic>>> getLocations(
-      String state, String city) async {
-    final snapshot = await _firestore
-        .collection('locations')
-        .where('state', isEqualTo: state)
-        .where('city', isEqualTo: city)
-        .get();
-
-    return snapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              ...doc.data() as Map<String, dynamic>,
-            })
-        .toList();
+  static Future<List<Map<String, dynamic>>> getAllLocations() async {
+    try {
+      final snapshot = await _locationsCollection.get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Add document ID to data map
+        return data;
+      }).toList();
+    } catch (e) {
+      print('Error fetching locations: $e');
+      return [];
+    }
   }
 }
