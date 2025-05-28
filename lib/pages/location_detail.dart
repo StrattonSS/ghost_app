@@ -31,17 +31,18 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
       final doc =
           await _firestore.collection('locations').doc(widget.locationId).get();
       final user = _auth.currentUser;
+
       if (doc.exists && user != null) {
-        final userDoc =
-            await _firestore.collection('users').doc(user.uid).get();
-        final favs = List<Map<String, dynamic>>.from(
-            userDoc.data()?['favoritedLocations'] ?? []);
-        final alreadyFavorited =
-            favs.any((fav) => fav['id'] == widget.locationId);
+        final favDoc = await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('favorites')
+            .doc(widget.locationId)
+            .get();
 
         setState(() {
           locationData = doc.data();
-          isFavorited = alreadyFavorited;
+          isFavorited = favDoc.exists;
           isLoading = false;
         });
       }
@@ -54,19 +55,28 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
     final user = _auth.currentUser;
     if (user == null || locationData == null) return;
 
-    final userRef = _firestore.collection('users').doc(user.uid);
+    final locationId = widget.locationId;
+
+    final favoriteRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('favorites')
+        .doc(locationId);
+
     final newFavorite = {
-      'id': widget.locationId,
-      'name': locationData!['name'],
-      'city': locationData!['city'],
-      'state': locationData!['state'],
-      'imageUrl': locationData!['imageUrl'] ?? '',
+      'id': locationId,
+      'name': locationData!['name'] ?? '',
+      'city': locationData!['city'] ?? '',
+      'state': locationData!['state'] ?? '',
+      'type': locationData!['type'] ?? '',
+      'activity': locationData!['activity'] ?? '',
+      'description': locationData!['description'] ?? '',
+      'coordinates': locationData!['coordinates'] ?? '',
+      'timestamp': FieldValue.serverTimestamp(),
     };
 
     try {
-      await userRef.update({
-        'favoritedLocations': FieldValue.arrayUnion([newFavorite])
-      });
+      await favoriteRef.set(newFavorite);
 
       setState(() {
         isFavorited = true;

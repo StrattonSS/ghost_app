@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'location_detail.dart';
 import 'terminal_theme.dart';
 
 class JournalPage extends StatefulWidget {
@@ -13,6 +15,7 @@ class _JournalPageState extends State<JournalPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   List<Map<String, dynamic>> favorites = [];
   List<Map<String, dynamic>> visited = [];
@@ -26,20 +29,30 @@ class _JournalPageState extends State<JournalPage>
 
   Future<void> _loadUserJournal() async {
     try {
-      final userId = 'testUser123'; // Replace with FirebaseAuth.uid later
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      final userId = user.uid;
+
+      // Load favorites from subcollection
+      final favQuery = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('favorites')
+          .orderBy('timestamp', descending: true)
+          .get();
+      final favs = favQuery.docs.map((doc) => doc.data()).toList();
+
+      // Load visited from user document (field-based for now)
       final userDoc = await _firestore.collection('users').doc(userId).get();
       final data = userDoc.data();
+      final visits =
+          List<Map<String, dynamic>>.from(data?['visitedLocations'] ?? []);
 
-      if (data != null) {
-        final favs =
-            List<Map<String, dynamic>>.from(data['favoritedLocations'] ?? []);
-        final visits =
-            List<Map<String, dynamic>>.from(data['visitedLocations'] ?? []);
-        setState(() {
-          favorites = favs;
-          visited = visits;
-        });
-      }
+      setState(() {
+        favorites = favs;
+        visited = visits;
+      });
     } catch (e) {
       print('Error loading journal: $e');
     }
@@ -105,10 +118,20 @@ class _JournalPageState extends State<JournalPage>
 
     return Column(
       children: favorites.map((location) {
-        return _terminalCard(
-          title: location['name'],
-          subtitle: '${location['city']}, ${location['state']}',
-          trailing: '[★ FAVORITED]',
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    LocationDetailPage(locationId: location['id']),
+              ),
+            );
+          },
+          child: _terminalCard(
+            title: location['name'],
+            subtitle: '${location['city']}, ${location['state']}',
+          ),
         );
       }).toList(),
     );
@@ -180,11 +203,11 @@ class _JournalPageState extends State<JournalPage>
   Widget _terminalCard({
     required String title,
     required String subtitle,
-    String? trailing,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         border: Border.all(color: TerminalColors.green),
         borderRadius: BorderRadius.circular(10),
@@ -193,13 +216,8 @@ class _JournalPageState extends State<JournalPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('> $title', style: TerminalTextStyles.heading),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(subtitle, style: TerminalTextStyles.body),
-          if (trailing != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(trailing, style: TerminalTextStyles.body),
-            ),
         ],
       ),
     );
