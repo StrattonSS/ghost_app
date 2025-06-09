@@ -13,28 +13,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? selectedState;
   String? selectedCity;
-  String searchQuery = '';
-  bool showActivityFilters = false;
+  final TextEditingController _searchController = TextEditingController();
 
   List<String> states = [];
   List<String> cities = [];
   List<Map<String, dynamic>> allLocations = [];
   List<Map<String, dynamic>> filteredLocations = [];
 
-  List<String> selectedActivities = [];
-  final List<String> allActivities = [
-    'Apparition',
-    'Cold Spot',
-    'EMF Reading',
-    'Voices',
-    'Disembodied Sound',
-    'Object Moved',
-  ];
-
   @override
   void initState() {
     super.initState();
     _loadStates();
+    _searchController.addListener(_applyFilters);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadStates() async {
@@ -58,40 +54,32 @@ class _HomePageState extends State<HomePage> {
           await LocationService.getLocations(selectedState!, selectedCity!);
       setState(() {
         allLocations = locations;
-        _applyFilters();
+        _applyFilters(); // Trigger initial filter based on current query
       });
     }
   }
 
   void _applyFilters() {
-    final query = searchQuery.toLowerCase();
+    final query = _searchController.text.toLowerCase();
 
     setState(() {
       filteredLocations = allLocations.where((location) {
-        final matchesSearch = location.values
-            .any((value) => value.toString().toLowerCase().contains(query));
-
-        final matchesActivity = selectedActivities.isEmpty ||
-            selectedActivities.any((activity) =>
-                location['activity']
-                    ?.toString()
-                    .toLowerCase()
-                    .contains(activity.toLowerCase()) ??
-                false);
-
-        return matchesSearch && matchesActivity;
+        return location.entries.any((entry) {
+          final value = entry.value.toString().toLowerCase();
+          return value.contains(query);
+        });
       }).toList();
     });
   }
 
-  void _toggleActivity(String activity) {
+  void _resetFilters() {
     setState(() {
-      if (selectedActivities.contains(activity)) {
-        selectedActivities.remove(activity);
-      } else {
-        selectedActivities.add(activity);
-      }
-      _applyFilters();
+      selectedState = null;
+      selectedCity = null;
+      cities = [];
+      allLocations = [];
+      filteredLocations = [];
+      _searchController.clear();
     });
   }
 
@@ -105,8 +93,46 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 🔍 Search bar
+              // 🔥 GHOST Branding Header
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 110,
+                    height: 110,
+                    child: Image.asset('assets/images/ghost_logo.png'),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image.asset(
+                          'assets/images/ghost_name.png',
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                        ),
+                        const SizedBox(height: 4),
+                        Image.asset(
+                          'assets/images/ghost_full_name.png',
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Use the search bar below to explore haunted locations.',
+                style: terminal_theme.TerminalTextStyles.body,
+              ),
+              const SizedBox(height: 12),
+
+              // 🔍 Live Search Bar
               TextField(
+                controller: _searchController,
                 style: terminal_theme.TerminalTextStyles.body,
                 cursorColor: terminal_theme.TerminalColors.green,
                 decoration: InputDecoration(
@@ -124,68 +150,10 @@ class _HomePageState extends State<HomePage> {
                         BorderSide(color: terminal_theme.TerminalColors.green),
                   ),
                 ),
-                onChanged: (value) {
-                  searchQuery = value;
-                  _applyFilters();
-                },
               ),
               const SizedBox(height: 12),
 
-              // ✅ Activity Dropdown-style Filter Toggle
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    showActivityFilters = !showActivityFilters;
-                  });
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                  decoration: BoxDecoration(
-                    border:
-                        Border.all(color: terminal_theme.TerminalColors.green),
-                    borderRadius: BorderRadius.circular(6),
-                    color: terminal_theme.TerminalColors.backgroundLight,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        selectedActivities.isEmpty
-                            ? 'Filter by Activity'
-                            : 'Activity Filters (${selectedActivities.length})',
-                        style: terminal_theme.TerminalTextStyles.body,
-                      ),
-                      Icon(
-                        showActivityFilters
-                            ? Icons.expand_less
-                            : Icons.expand_more,
-                        color: terminal_theme.TerminalColors.green,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (showActivityFilters)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: allActivities.map((activity) {
-                    return FilterChip(
-                      label: Text(activity,
-                          style: terminal_theme.TerminalTextStyles.body),
-                      selected: selectedActivities.contains(activity),
-                      onSelected: (_) => _toggleActivity(activity),
-                      selectedColor: terminal_theme.TerminalColors.green,
-                      backgroundColor:
-                          terminal_theme.TerminalColors.backgroundLight,
-                      checkmarkColor: Colors.black,
-                    );
-                  }).toList(),
-                ),
-              const SizedBox(height: 12),
-
-              // 🏙️ State Dropdown
+              // 🗺️ State Dropdown
               DropdownButton<String>(
                 value: selectedState,
                 isExpanded: true,
@@ -206,7 +174,6 @@ class _HomePageState extends State<HomePage> {
                     cities = [];
                     allLocations = [];
                     filteredLocations = [];
-                    selectedActivities = [];
                   });
                   _loadCities(value!);
                 },
@@ -231,14 +198,25 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (value) {
                     setState(() {
                       selectedCity = value;
-                      selectedActivities = [];
                     });
                     _loadLocations();
                   },
                 ),
+
+              // 🧹 Reset Filters Button
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: _resetFilters,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: terminal_theme.TerminalColors.green,
+                  foregroundColor: Colors.black,
+                ),
+                child: const Text('Reset Filters'),
+              ),
+
               const SizedBox(height: 20),
 
-              // 📍 Results List
+              // 📋 Results List
               if (filteredLocations.isNotEmpty)
                 ListView.builder(
                   physics: const NeverScrollableScrollPhysics(),
@@ -248,10 +226,11 @@ class _HomePageState extends State<HomePage> {
                     final location = filteredLocations[index];
                     return GestureDetector(
                       onTap: () {
+                        print("Tapped on location: ${location['id']}");
                         Navigator.pushNamed(
                           context,
                           '/location_detail',
-                          arguments: location['id'],
+                          arguments: location,
                         );
                       },
                       child: LocationTile(location: location),

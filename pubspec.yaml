@@ -43,7 +43,10 @@ flutter:
     - assets/splash/startup2.mp3
     - assets/map_style_dark.json
     - assets/sounds/static.wav
-    - assets/ghost_animation.mp4  # ✅ Added for splash video support
+    - assets/ghost_animation.mp4 
+    - assets/images/ghost_name.png
+    - assets/images/ghost_logo.png
+    - assets/images/ghost_full_name.png
 
   fonts:
     - family: Glasstty

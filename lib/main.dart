@@ -3,8 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ghost_app/pages/login_user.dart';
 import 'package:ghost_app/pages/splash_screen.dart';
+import 'package:ghost_app/pages/location_detail.dart'; // ✅ Ensure this is imported
 import 'main_scaffold.dart';
-import 'package:ghost_app/pages/location_detail.dart'; // ✅ Import this
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,11 +30,12 @@ class GhostApp extends StatelessWidget {
         },
         '/location_detail': (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
-          if (args is String && args.isNotEmpty) {
-            return LocationDetailPage(locationId: args);
+          if (args is Map) {
+            final locationData = Map<String, dynamic>.from(args);
+            return LocationDetailPage(locationData: locationData);
           } else {
             return const Scaffold(
-              body: Center(child: Text('Invalid location ID')),
+              body: Center(child: Text('Invalid location data')),
             );
           }
         },

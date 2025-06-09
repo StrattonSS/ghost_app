@@ -30,11 +30,11 @@ class GhostApp extends StatelessWidget {
         },
         '/location_detail': (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
-          if (args is String && args.isNotEmpty) {
-            return LocationDetailPage(locationId: args);
+          if (args is Map<String, dynamic>) {
+            return LocationDetailPage(locationData: args);
           } else {
             return const Scaffold(
-              body: Center(child: Text('Invalid location ID')),
+              body: Center(child: Text('Invalid location data')),
             );
           }
         },
