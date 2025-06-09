@@ -11,8 +11,7 @@ class TerminalColors {
   static const Color greyDark = Color(0xFF444444); // 🩶 Added
   static const Color accent = Color(0xFF222222);
   static const Color text = Color(0xFFB8FFB8);
-  static final Color transparentGreen =
-      TerminalColors.green.withOpacity(0.1); // Transparent green
+  static final Color transparentGreen = TerminalColors.green.withOpacity(0.1);
 }
 
 class TerminalTextStyles {

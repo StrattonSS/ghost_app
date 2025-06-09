@@ -25,22 +25,23 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
       final y = event.y;
       final z = event.z;
       final magnitude = sqrt(x * x + y * y + z * z);
-
       setState(() {
         _emfValue = double.parse(magnitude.toStringAsFixed(1));
       });
     });
   }
 
-  Color _getBarColor(int index) {
-    if (_emfValue >= 80 && index >= 4) return TerminalColors.red;
-    if (_emfValue >= 60 && index >= 3) return TerminalColors.orange;
-    if (_emfValue >= 40 && index >= 2) return TerminalColors.yellow;
-    if (_emfValue >= 20 && index >= 1) return TerminalColors.green;
-    return TerminalColors.greyDark;
-  }
+  Widget _buildSignalMeter(double value, double scaleFactor) {
+    final int level = (value / 20).clamp(0, 5).toInt();
 
-  Widget _buildEMFBars(double scaleFactor) {
+    final colors = [
+      TerminalColors.green.withOpacity(0.3),
+      TerminalColors.green.withOpacity(0.5),
+      TerminalColors.green.withOpacity(0.7),
+      TerminalColors.green.withOpacity(0.85),
+      TerminalColors.green,
+    ];
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(5, (index) {
@@ -49,8 +50,17 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
           width: 20 * scaleFactor,
           height: (index + 1) * 20.0 * scaleFactor,
           decoration: BoxDecoration(
-            color: _getBarColor(index),
+            color: index < level ? colors[index] : TerminalColors.greyDark,
             borderRadius: BorderRadius.circular(4),
+            boxShadow: index < level
+                ? [
+                    BoxShadow(
+                      color: colors[index].withOpacity(0.8),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    )
+                  ]
+                : [],
           ),
         );
       }),
@@ -59,7 +69,6 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isAlarm = _emfValue > 50.0;
     final screenWidth = MediaQuery.of(context).size.width;
     final scaleFactor = screenWidth < 400 ? 0.8 : 1.0;
 
@@ -71,38 +80,68 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
             const Text('>> EMF_READER.EXE', style: TerminalTextStyles.heading),
       ),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const Text(
+                'EMF READER',
+                style: TerminalTextStyles.heading,
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: TerminalColors.green, width: 2),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: TerminalColors.green.withOpacity(0.5),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    )
+                  ],
+                ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('EMF Strength', style: TerminalTextStyles.body),
-                    const SizedBox(height: 12),
                     Text(
-                      '$_emfValue µT',
-                      style: TerminalTextStyles.heading
-                          .copyWith(fontSize: 48 * scaleFactor),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildEMFBars(scaleFactor),
-                    const SizedBox(height: 30),
-                    Text(
-                      isAlarm ? 'ALARM' : 'NORMAL',
-                      style: TerminalTextStyles.label.copyWith(
-                        color:
-                            isAlarm ? TerminalColors.red : TerminalColors.green,
-                        fontSize: 20 * scaleFactor,
+                      _emfValue.toStringAsFixed(1),
+                      style: TerminalTextStyles.heading.copyWith(
+                        fontSize: 64 * scaleFactor,
+                        color: TerminalColors.green,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 10,
+                            color: TerminalColors.green,
+                            offset: Offset(0, 0),
+                          )
+                        ],
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'mG',
+                      style: TerminalTextStyles.label.copyWith(
+                        fontSize: 18 * scaleFactor,
+                        color: TerminalColors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'STRENGTH',
+                      style: TerminalTextStyles.body,
+                    ),
+                    const Text(
+                      'MAGNETIC FIELD',
+                      style: TerminalTextStyles.body,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSignalMeter(_emfValue, scaleFactor),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),

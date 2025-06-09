@@ -1,0 +1,9 @@
+<resources>
+    <string name="default_web_client_id">UNUSED</string>
+    <string name="firebase_database_url">https://ghost-app-61105.firebaseio.com</string>
+    <string name="gcm_defaultSenderId">869905958615</string>
+    <string name="google_app_id">1:869905958615:android:fc3974681c23534fa0d292</string>
+    <string name="google_api_key">AIzaSyAGsugZM9koD4gC0X5mfQTsXCTqkegigfg</string>
+    <string name="project_id">ghost-app-61105</string>
+    <string name="storage_bucket">ghost-app-61105.firebasestorage.app</string>
+</resources>

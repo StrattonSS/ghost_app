@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:ghost_app/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ghost_app/pages/login_user.dart';
+import 'package:ghost_app/pages/splash_screen.dart';
+import 'package:ghost_app/main_scaffold.dart';
+import 'package:ghost_app/pages/location_detail.dart'; // ✅ Import this
 
-// Temporarily using basic splash screen instead of custom
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  await Firebase.initializeApp();
   runApp(const GhostApp());
 }
 
@@ -18,41 +18,27 @@ class GhostApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'G.H.O.S.T.',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF000000),
-        primaryColor: Colors.greenAccent,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.greenAccent,
-        ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Colors.green,
-          foregroundColor: Colors.black,
-        ),
-      ),
-      home: const PlaceholderSplashScreen(),
-    );
-  }
-}
-
-class PlaceholderSplashScreen extends StatelessWidget {
-  const PlaceholderSplashScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'G.H.O.S.T.',
-          style: TextStyle(
-            fontSize: 32,
-            color: Colors.greenAccent,
-            fontFamily: 'Courier',
-          ),
-        ),
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/auth': (context) {
+          final user = FirebaseAuth.instance.currentUser;
+          return user == null ? const LoginUserScreen() : const MainScaffold();
+        },
+        '/location_detail': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          if (args is String && args.isNotEmpty) {
+            return LocationDetailPage(locationId: args);
+          } else {
+            return const Scaffold(
+              body: Center(child: Text('Invalid location ID')),
+            );
+          }
+        },
+      },
     );
   }
 }

@@ -16,6 +16,31 @@
       "api_key": [
         {
           "current_key": "AIzaSyAGsugZM9koD4gC0X5mfQTsXCTqkegigfg"
+        },
+        {
+          "current_key": "AIzaSyD37-6DXolG_r5F_tbEXT-PHpsHY8Ziwao"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:869905958615:android:13490fd86a965d22a0d292",
+        "android_client_info": {
+          "package_name": "com.ghostapp.hunting.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGsugZM9koD4gC0X5mfQTsXCTqkegigfg"
+        },
+        {
+          "current_key": "AIzaSyD37-6DXolG_r5F_tbEXT-PHpsHY8Ziwao"
         }
       ],
       "services": {
