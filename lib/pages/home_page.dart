@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadStates();
-    _searchController.addListener(_applyFilters);
+    _loadAllLocations(); // Load all locations initially
   }
 
   @override
@@ -54,33 +54,45 @@ class _HomePageState extends State<HomePage> {
           await LocationService.getLocations(selectedState!, selectedCity!);
       setState(() {
         allLocations = locations;
-        _applyFilters(); // Trigger initial filter based on current query
       });
+      _applyFilters(); // Apply current search to new data
     }
+  }
+
+  Future<void> _loadAllLocations() async {
+    final locations = await LocationService.getAllLocations();
+    setState(() {
+      allLocations = locations;
+      filteredLocations = List.from(locations);
+    });
   }
 
   void _applyFilters() {
     final query = _searchController.text.toLowerCase();
 
     setState(() {
-      filteredLocations = allLocations.where((location) {
-        return location.entries.any((entry) {
-          final value = entry.value.toString().toLowerCase();
-          return value.contains(query);
-        });
-      }).toList();
+      if (query.isEmpty) {
+        filteredLocations = List.from(allLocations); // Show all if blank
+      } else {
+        filteredLocations = allLocations.where((location) {
+          return location.entries.any((entry) {
+            final value = entry.value.toString().toLowerCase();
+            return value.contains(query);
+          });
+        }).toList();
+      }
     });
   }
 
-  void _resetFilters() {
+  void _resetFilters() async {
     setState(() {
       selectedState = null;
       selectedCity = null;
       cities = [];
-      allLocations = [];
-      filteredLocations = [];
       _searchController.clear();
     });
+
+    await _loadAllLocations(); // Refresh full list
   }
 
   @override
@@ -93,35 +105,12 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 🔥 GHOST Branding Header
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 110,
-                    height: 110,
-                    child: Image.asset('assets/images/ghost_logo.png'),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Image.asset(
-                          'assets/images/ghost_name.png',
-                          fit: BoxFit.contain,
-                          width: double.infinity,
-                        ),
-                        const SizedBox(height: 4),
-                        Image.asset(
-                          'assets/images/ghost_full_name.png',
-                          fit: BoxFit.contain,
-                          width: double.infinity,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              Center(
+                child: Image.asset(
+                  'assets/images/full_logo.png',
+                  height: 160,
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -130,11 +119,12 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 12),
 
-              // 🔍 Live Search Bar
+              // ✅ Fully functional live search bar
               TextField(
                 controller: _searchController,
                 style: terminal_theme.TerminalTextStyles.body,
                 cursorColor: terminal_theme.TerminalColors.green,
+                onChanged: (_) => _applyFilters(),
                 decoration: InputDecoration(
                   hintText: 'Search haunted locations...',
                   hintStyle: terminal_theme.TerminalTextStyles.muted,
@@ -203,8 +193,9 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
 
-              // 🧹 Reset Filters Button
               const SizedBox(height: 12),
+
+              // 🧹 Reset Filters Button
               ElevatedButton(
                 onPressed: _resetFilters,
                 style: ElevatedButton.styleFrom(
@@ -226,7 +217,6 @@ class _HomePageState extends State<HomePage> {
                     final location = filteredLocations[index];
                     return GestureDetector(
                       onTap: () {
-                        print("Tapped on location: ${location['id']}");
                         Navigator.pushNamed(
                           context,
                           '/location_detail',
@@ -237,7 +227,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                 )
-              else if (selectedState != null && selectedCity != null)
+              else
                 const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Center(

@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'terminal_theme.dart';
+import '../terminal_theme.dart';
 
 class EMFReaderPage extends StatefulWidget {
   const EMFReaderPage({Key? key}) : super(key: key);

@@ -6,7 +6,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'terminal_theme.dart';
+import '../terminal_theme.dart';
 
 class ParabolicMicPage extends StatefulWidget {
   const ParabolicMicPage({super.key});

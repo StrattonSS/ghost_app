@@ -28,6 +28,7 @@ dependencies:
   flutterfire_cli: ^1.2.0
   permission_handler: ^11.3.1
   intl: ^0.18.1
+  connectivity_plus: ^5.0.2
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +48,7 @@ flutter:
     - assets/images/ghost_name.png
     - assets/images/ghost_logo.png
     - assets/images/ghost_full_name.png
+    - assets/images/full_logo.png
 
   fonts:
     - family: Glasstty

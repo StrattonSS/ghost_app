@@ -51,4 +51,15 @@ class LocationService {
       return data;
     }).toList();
   }
+
+  /// 🔍 Get all locations (for search-only functionality)
+  static Future<List<Map<String, dynamic>>> getAllLocations() async {
+    final snapshot = await _firestore.collection('locations').get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
+  }
 }

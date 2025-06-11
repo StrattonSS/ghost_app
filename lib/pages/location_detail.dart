@@ -8,25 +8,44 @@ class LocationDetailPage extends StatelessWidget {
 
   const LocationDetailPage({super.key, required this.locationData});
 
-  void _launchMap(double latitude, double longitude) async {
-    final Uri mapUri = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude');
+  void _launchMap({
+    required BuildContext context,
+    required String street,
+    required String city,
+    required String state,
+    required GeoPoint? coordinates,
+  }) async {
+    Uri mapUri;
+
+    if (street.isNotEmpty && city.isNotEmpty && state.isNotEmpty) {
+      final address = Uri.encodeComponent('$street, $city, $state');
+      mapUri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$address');
+    } else if (coordinates != null) {
+      mapUri = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=${coordinates.latitude},${coordinates.longitude}',
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location data is incomplete.')),
+      );
+      return;
+    }
+
     if (await canLaunchUrl(mapUri)) {
       await launchUrl(mapUri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Could not launch map';
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to launch map.')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final String name = locationData['name'] ?? 'Unknown';
-    final String description =
-        locationData['description'] ?? 'No description provided.';
-    final String history =
-        locationData['history'] ?? 'No historical information available.';
-    final String evidence =
-        locationData['evidence'] ?? 'No evidence reports logged.';
+    final String description = locationData['description'] ?? 'No description provided.';
+    final String history = locationData['history'] ?? 'No historical information available.';
+    final String evidence = locationData['evidence'] ?? 'No evidence reports logged.';
     final String city = locationData['city'] ?? 'N/A';
     final String state = locationData['state'] ?? 'N/A';
     final String street = locationData['street'] ?? '';
@@ -43,7 +62,6 @@ class LocationDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 📸 Image Section
             if (imageUrl != null && imageUrl.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -55,26 +73,21 @@ class LocationDetailPage extends StatelessWidget {
               ),
             const SizedBox(height: 16),
 
-            // 📍 Name + Address Section
+            // 📍 Name + Address
             Card(
               color: Colors.black,
               margin: const EdgeInsets.symmetric(horizontal: 8.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(name,
-                        style: TerminalTextStyles.heading,
-                        textAlign: TextAlign.center),
+                    Text(name, style: TerminalTextStyles.heading, textAlign: TextAlign.center),
                     const SizedBox(height: 8),
                     Text(
-                      street.isNotEmpty
-                          ? '$street, $city, $state'
-                          : '$city, $state',
+                      street.isNotEmpty ? '$street, $city, $state' : '$city, $state',
                       style: TerminalTextStyles.body,
                       textAlign: TextAlign.center,
                     ),
@@ -84,109 +97,74 @@ class LocationDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 📝 Description Section
-            Card(
-              color: Colors.black,
-              margin: const EdgeInsets.symmetric(horizontal: 8.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text('Description',
-                        style: TerminalTextStyles.heading,
-                        textAlign: TextAlign.center),
-                    const SizedBox(height: 8),
-                    Text(description,
-                        style: TerminalTextStyles.body,
-                        textAlign: TextAlign.center),
-                  ],
-                ),
-              ),
-            ),
+            // 📝 Description
+            _buildCard('Description', description),
             const SizedBox(height: 16),
 
-            // 🕰️ History Section
-            Card(
-              color: Colors.black,
-              margin: const EdgeInsets.symmetric(horizontal: 8.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text('Brief History',
-                        style: TerminalTextStyles.heading,
-                        textAlign: TextAlign.center),
-                    const SizedBox(height: 8),
-                    Text(history,
-                        style: TerminalTextStyles.body,
-                        textAlign: TextAlign.center),
-                  ],
-                ),
-              ),
-            ),
+            // 🕰️ History
+            _buildCard('Brief History', history),
             const SizedBox(height: 16),
 
-            // 👻 Evidence Reported Section
-            Card(
-              color: Colors.black,
-              margin: const EdgeInsets.symmetric(horizontal: 8.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text('Evidence Reported',
-                        style: TerminalTextStyles.heading,
-                        textAlign: TextAlign.center),
-                    const SizedBox(height: 8),
-                    Text(evidence,
-                        style: TerminalTextStyles.body,
-                        textAlign: TextAlign.center),
-                  ],
-                ),
-              ),
-            ),
+            // 👻 Evidence
+            _buildCard('Evidence Reported', evidence),
             const SizedBox(height: 16),
 
-            // 🗺️ Map Preview Section
+            // 🗺️ Navigation Button
             if (coordinates != null)
               GestureDetector(
-                onTap: () =>
-                    _launchMap(coordinates.latitude, coordinates.longitude),
+                onTap: () => _launchMap(
+                  context: context,
+                  street: street,
+                  city: city,
+                  state: state,
+                  coordinates: coordinates,
+                ),
                 child: Card(
                   color: Colors.black,
                   margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 4,
-                  child: Container(
+                  child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.map, color: TerminalColors.green),
                         const SizedBox(width: 12),
-                        Text(
-                          'Tap to Navigate to Location',
-                          style: TerminalTextStyles.body,
-                          textAlign: TextAlign.center,
+                        Flexible(
+                          child: Text(
+                            'Tap to Navigate to Location',
+                            style: TerminalTextStyles.body,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(String title, String content) {
+    return Card(
+      color: Colors.black,
+      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(title, style: TerminalTextStyles.heading, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(content, style: TerminalTextStyles.body, textAlign: TextAlign.center),
           ],
         ),
       ),

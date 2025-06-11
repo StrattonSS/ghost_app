@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'terminal_theme.dart';
+import '../terminal_theme.dart';
 
 class SpiritBoxPage extends StatefulWidget {
   const SpiritBoxPage({Key? key}) : super(key: key);

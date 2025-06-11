@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../pages/emf_reader_page.dart';
-import '../pages/uv_sensor_page.dart';
-import '../pages/spirit_box_page.dart';
-import '../pages/parabolic_mic_page.dart';
-import '../pages/ghost_camera_page.dart';
+import 'prod_tools/emf_reader_page.dart';
+import 'prod_tools/uv_sensor_page.dart';
+import 'prod_tools/spirit_box_page.dart';
+import 'prod_tools/parabolic_mic_page.dart';
+import 'prod_tools/ghost_camera_page.dart';
 import '../pages/tool_tutorial_page.dart';
 import 'terminal_theme.dart';
 

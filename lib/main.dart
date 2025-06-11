@@ -1,15 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ghost_app/pages/login_user.dart';
 import 'package:ghost_app/pages/splash_screen.dart';
-import 'package:ghost_app/pages/location_detail.dart'; // ✅ Ensure this is imported
+import 'package:ghost_app/pages/location_detail.dart';
 import 'main_scaffold.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const GhostApp());
+
+  // ✅ Set persistence without 'await'
+  FirebaseFirestore.instance.settings =
+      const Settings(persistenceEnabled: true);
+
+  runApp(const GhostAppWrapper());
+}
+
+class GhostAppWrapper extends StatefulWidget {
+  const GhostAppWrapper({super.key});
+
+  @override
+  State<GhostAppWrapper> createState() => _GhostAppWrapperState();
+}
+
+class _GhostAppWrapperState extends State<GhostAppWrapper> {
+  @override
+  void dispose() {
+    // ✅ Clear cache when app fully closes
+    FirebaseFirestore.instance.clearPersistence();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const GhostApp();
+  }
 }
 
 class GhostApp extends StatelessWidget {
