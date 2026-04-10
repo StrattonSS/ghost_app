@@ -36,7 +36,9 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
   }
 
   void _startMagnetometerStream() {
-    _magnetometerSubscription = magnetometerEventStream().listen(
+    _magnetometerSubscription = magnetometerEventStream(
+      samplingPeriod: SensorInterval.normalInterval,
+    ).listen(
           (MagnetometerEvent event) {
         final x = event.x;
         final y = event.y;
@@ -50,9 +52,11 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
           _y = double.parse(y.toStringAsFixed(1));
           _z = double.parse(z.toStringAsFixed(1));
           _magnitude = double.parse(magnitude.toStringAsFixed(1));
+
           if (_magnitude > _peakReading) {
             _peakReading = _magnitude;
           }
+
           _sensorActive = true;
           _errorMessage = null;
         });
@@ -118,9 +122,15 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
         permission = await Geolocator.requestPermission();
       }
 
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied) {
         _showSnackBar('Location permission not granted.');
+        return null;
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showSnackBar(
+          'Location permission is permanently denied. Enable it in app settings if you want to attach coordinates.',
+        );
         return null;
       }
 
@@ -173,7 +183,7 @@ class _EMFReaderPageState extends State<EMFReaderPage> {
         state: (result['state'] ?? '').toString(),
         evidenceType: (result['evidenceType'] ?? 'Observation').toString(),
         notes: (result['notes'] ?? '').toString(),
-        magneticReading: result['magneticReading'] as double?,
+        magneticReading: (result['magneticReading'] as num?)?.toDouble(),
         latitude: (result['latitude'] as num?)?.toDouble(),
         longitude: (result['longitude'] as num?)?.toDouble(),
       );

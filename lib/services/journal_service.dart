@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ghost_app/services/leaderboard_service.dart';
 
 class JournalEntry {
   final String id;
@@ -113,6 +114,8 @@ class JournalService {
         'longitude': longitude,
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      await LeaderboardService.instance.incrementEvidenceLogged();
     } catch (e, stackTrace) {
       log(
         'Failed to save journal entry',
@@ -136,9 +139,8 @@ class JournalService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
-          (snapshot) => snapshot.docs
-          .map((doc) => JournalEntry.fromDoc(doc))
-          .toList(),
+          (snapshot) =>
+          snapshot.docs.map((doc) => JournalEntry.fromDoc(doc)).toList(),
     );
   }
 }

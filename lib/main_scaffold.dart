@@ -4,6 +4,8 @@ import 'package:ghost_app/pages/journal_page.dart';
 import 'package:ghost_app/pages/profile_page.dart';
 import 'package:ghost_app/pages/tools_page.dart';
 
+import 'pages/terminal_theme.dart';
+
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
 
@@ -14,16 +16,25 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
-  late final List<Widget> _pages = [
-    const HomePage(),
-    const JournalPage(),
-    const ToolsPage(),
-    const ProfilePage(),
+  late final List<Widget> _pages = const [
+    HomePage(),
+    JournalPage(),
+    ToolsPage(),
+    ProfilePage(),
   ];
+
+  void _onTabSelected(int index) {
+    if (_currentIndex == index) return;
+
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TerminalColors.background,
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
@@ -31,14 +42,16 @@ class _MainScaffoldState extends State<MainScaffold> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.greenAccent,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        backgroundColor: TerminalColors.background,
+        selectedItemColor: TerminalColors.green,
+        unselectedItemColor: TerminalColors.greyDark,
+        selectedLabelStyle: TerminalTextStyles.muted.copyWith(
+          color: TerminalColors.green,
+        ),
+        unselectedLabelStyle: TerminalTextStyles.muted.copyWith(
+          color: TerminalColors.greyDark,
+        ),
+        onTap: _onTabSelected,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.place),

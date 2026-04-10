@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ghost_app/pages/terminal_theme.dart' as terminal_theme;
 import 'package:ghost_app/services/location_service.dart';
@@ -23,10 +25,18 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> allLocations = [];
   List<Map<String, dynamic>> filteredLocations = [];
 
+  Timer? _searchDebounce;
+
   @override
   void initState() {
     super.initState();
     loadData();
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    super.dispose();
   }
 
   Future<void> loadData() async {
@@ -55,7 +65,8 @@ class _HomePageState extends State<HomePage> {
 
       final sortedStates = stateSet.toList()..sort();
       final mappedCities = {
-        for (final entry in cityMap.entries) entry.key: (entry.value.toList()..sort()),
+        for (final entry in cityMap.entries)
+          entry.key: (entry.value.toList()..sort()),
       };
 
       setState(() {
@@ -67,7 +78,7 @@ class _HomePageState extends State<HomePage> {
       });
 
       filterLocations();
-    } catch (e) {
+    } catch (_) {
       setState(() {
         errorMessage = 'Failed to load haunted locations.';
         isLoading = false;
@@ -86,18 +97,30 @@ class _HomePageState extends State<HomePage> {
         final description = (loc['description'] ?? '').toString().toLowerCase();
         final activity = (loc['activity'] ?? '').toString().toLowerCase();
 
-        final matchState = selectedState == null || loc['state'] == selectedState;
-        final matchCity = selectedCity == null || loc['city'] == selectedCity;
+        final matchState =
+            selectedState == null || loc['state'] == selectedState;
+        final matchCity =
+            selectedCity == null || loc['city'] == selectedCity;
 
-        final matchesSearch = query.isEmpty ||
-            name.contains(query) ||
-            city.contains(query) ||
-            state.contains(query) ||
-            description.contains(query) ||
-            activity.contains(query);
+        final matchesSearch =
+            query.isEmpty ||
+                name.contains(query) ||
+                city.contains(query) ||
+                state.contains(query) ||
+                description.contains(query) ||
+                activity.contains(query);
 
         return matchState && matchCity && matchesSearch;
       }).toList();
+    });
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 250), () {
+      if (!mounted) return;
+      searchQuery = value;
+      filterLocations();
     });
   }
 
@@ -130,10 +153,10 @@ class _HomePageState extends State<HomePage> {
         items: items
             .map(
               (item) => DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              ),
-            )
+            value: item,
+            child: Text(item),
+          ),
+        )
             .toList(),
         onChanged: onChanged,
       ),
@@ -141,17 +164,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildLocationTile(Map<String, dynamic> location) {
+    final id = (location['id'] ?? '').toString();
     final name = (location['name'] ?? 'Unknown').toString();
     final city = (location['city'] ?? 'Unknown City').toString();
     final state = (location['state'] ?? 'Unknown State').toString();
     final description = (location['description'] ?? '').toString();
 
     return GestureDetector(
-      onTap: () {
+      onTap: id.isEmpty
+          ? null
+          : () {
         Navigator.pushNamed(
           context,
           '/location_detail',
-          arguments: location['id'],
+          arguments: id,
         );
       },
       child: Container(
@@ -194,9 +220,11 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Tap to investigate',
+              id.isEmpty ? 'Location unavailable' : 'Tap to investigate',
               style: terminal_theme.TerminalTextStyles.body.copyWith(
-                color: terminal_theme.TerminalColors.green,
+                color: id.isEmpty
+                    ? Colors.grey
+                    : terminal_theme.TerminalColors.green,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -236,8 +264,9 @@ class _HomePageState extends State<HomePage> {
     if (filteredLocations.isEmpty) {
       return Center(
         child: Text(
-          'No matching locations found.',
+          'No matching locations found. Try clearing filters or using a broader search.',
           style: terminal_theme.TerminalTextStyles.body,
+          textAlign: TextAlign.center,
         ),
       );
     }
@@ -247,8 +276,8 @@ class _HomePageState extends State<HomePage> {
         final crossAxisCount = constraints.maxWidth > 900
             ? 3
             : constraints.maxWidth > 600
-                ? 2
-                : 1;
+            ? 2
+            : 1;
 
         return GridView.builder(
           itemCount: filteredLocations.length,
@@ -310,10 +339,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-                onChanged: (value) {
-                  searchQuery = value;
-                  filterLocations();
-                },
+                onChanged: _onSearchChanged,
               ),
               buildStyledDropdown(
                 hint: 'Filter by state',
@@ -323,7 +349,8 @@ class _HomePageState extends State<HomePage> {
                   setState(() {
                     selectedState = value;
                     selectedCity = null;
-                    cities = selectedState != null && citiesByState.containsKey(selectedState)
+                    cities = selectedState != null &&
+                        citiesByState.containsKey(selectedState)
                         ? citiesByState[selectedState]!
                         : [];
                   });

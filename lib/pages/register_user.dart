@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../main_scaffold.dart';
 import 'login_user.dart';
@@ -21,63 +20,71 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  DateTime? _dob;
 
+  DateTime? _dob;
   bool _loading = false;
 
-  Future<bool> _requestPermissions() async {
-    final cameraStatus = await Permission.camera.request();
-    final micStatus = await Permission.microphone.request();
-    final notifStatus = await Permission.notification.request();
-
-    return cameraStatus.isGranted &&
-        micStatus.isGranted &&
-        notifStatus.isGranted;
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
+    FocusScope.of(context).unfocus();
     setState(() => _loading = true);
 
-    final permissionsGranted = await _requestPermissions();
-    if (!permissionsGranted) {
-      _showError(
-          'Camera, microphone, and notification permissions are required.');
-      setState(() => _loading = false);
-      return;
-    }
-
     try {
-      UserCredential userCred =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      final username = _usernameController.text.trim();
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+
+      final userCred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCred.user!.uid)
-          .set({
-        'username': _usernameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'dateOfBirth': _dob?.toIso8601String(),
-        'createdAt': Timestamp.now(),
-      });
-
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainScaffold()),
+      final user = userCred.user;
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'user-not-created',
+          message: 'User account could not be created.',
         );
       }
+
+      await user.updateDisplayName(username);
+      await user.reload();
+
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'username': username,
+        'email': email,
+        'dateOfBirth': _dob?.toIso8601String(),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const MainScaffold()),
+      );
     } on FirebaseAuthException catch (e) {
-      _showError(e.message ?? 'Registration failed');
+      _showError(e.message ?? 'Registration failed.');
+    } catch (_) {
+      _showError('Something went wrong while creating your account.');
     } finally {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
   void _showError(String message) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: TerminalColors.background,
@@ -97,31 +104,54 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
       firstDate: DateTime(1900),
       lastDate: now,
     );
-    if (picked != null) setState(() => _dob = picked);
+
+    if (picked != null) {
+      setState(() => _dob = picked);
+    }
   }
 
-  Widget _buildInputField(String label, TextEditingController controller,
-      {bool obscure = false}) {
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TerminalTextStyles.body,
+      filled: true,
+      fillColor: TerminalColors.background,
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: TerminalColors.green),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: TerminalColors.green),
+      ),
+      errorBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: TerminalColors.red),
+      ),
+      focusedErrorBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: TerminalColors.red),
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    bool obscure = false,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('> $label:', style: TerminalTextStyles.body),
         const SizedBox(height: 6),
-        TextField(
+        TextFormField(
           controller: controller,
           obscureText: obscure,
+          keyboardType: keyboardType,
           style: TerminalTextStyles.body,
           cursorColor: TerminalColors.green,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: TerminalColors.background,
-            enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: TerminalColors.green),
-            ),
-            focusedBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: TerminalColors.green),
-            ),
-          ),
+          decoration: _inputDecoration(label),
+          validator: validator,
+          enabled: !_loading,
         ),
       ],
     );
@@ -132,18 +162,24 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
     return Scaffold(
       backgroundColor: TerminalColors.background,
       appBar: AppBar(
-        title: const Text('>> REGISTER_NEW.TXT',
-            style: TerminalTextStyles.heading),
+        title: const Text(
+          '>> REGISTER_NEW.TXT',
+          style: TerminalTextStyles.heading,
+        ),
         backgroundColor: TerminalColors.background,
         foregroundColor: TerminalColors.green,
         actions: [
           IconButton(
             icon: const Icon(Icons.menu),
             color: TerminalColors.green,
-            onPressed: () {
+            onPressed: _loading
+                ? null
+                : () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginUserScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const LoginUserScreen(),
+                ),
               );
             },
           ),
@@ -159,17 +195,61 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
                 key: _formKey,
                 child: IntrinsicHeight(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildInputField('Username', _usernameController),
+                      _buildInputField(
+                        label: 'Username',
+                        controller: _usernameController,
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+                          if (text.isEmpty) {
+                            return 'Username is required.';
+                          }
+                          if (text.length < 3) {
+                            return 'Username must be at least 3 characters.';
+                          }
+                          return null;
+                        },
+                      ),
                       const SizedBox(height: 16),
-                      _buildInputField('Email', _emailController),
+                      _buildInputField(
+                        label: 'Email',
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+                          if (text.isEmpty) {
+                            return 'Email is required.';
+                          }
+                          final emailRegex = RegExp(
+                            r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                          );
+                          if (!emailRegex.hasMatch(text)) {
+                            return 'Enter a valid email address.';
+                          }
+                          return null;
+                        },
+                      ),
                       const SizedBox(height: 16),
-                      _buildInputField('Password', _passwordController,
-                          obscure: true),
+                      _buildInputField(
+                        label: 'Password',
+                        controller: _passwordController,
+                        obscure: true,
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+                          if (text.isEmpty) {
+                            return 'Password is required.';
+                          }
+                          if (text.length < 6) {
+                            return 'Password must be at least 6 characters.';
+                          }
+                          return null;
+                        },
+                      ),
                       const SizedBox(height: 24),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(
+                        title: const Text(
                           'Date of Birth (Optional)',
                           style: TerminalTextStyles.body,
                         ),
@@ -182,7 +262,7 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
                         trailing: IconButton(
                           icon: const Icon(Icons.calendar_today),
                           color: TerminalColors.green,
-                          onPressed: _selectDateOfBirth,
+                          onPressed: _loading ? null : _selectDateOfBirth,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -192,14 +272,38 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
                           backgroundColor: TerminalColors.green,
                           foregroundColor: TerminalColors.background,
                           padding: const EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 24),
+                            vertical: 16,
+                            horizontal: 24,
+                          ),
                           textStyle: TerminalTextStyles.button,
                         ),
                         child: _loading
-                            ? const CircularProgressIndicator(
-                                color: TerminalColors.background,
-                              )
+                            ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            color: TerminalColors.background,
+                          ),
+                        )
                             : const Text('>> REGISTER'),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: _loading
+                            ? null
+                            : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LoginUserScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Already registered? Sign in',
+                          style: TerminalTextStyles.body,
+                        ),
                       ),
                     ],
                   ),

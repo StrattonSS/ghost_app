@@ -1,34 +1,39 @@
 import 'package:flutter/material.dart';
+
 import '../pages/emf_reader_page.dart';
 import 'terminal_theme.dart';
 
 class ToolsPage extends StatelessWidget {
   const ToolsPage({super.key});
 
-  Widget buildScannerCard({
+  Widget _buildScannerCard({
     required BuildContext context,
     required String title,
     required String description,
     required VoidCallback onTap,
   }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.04,
-        vertical: 8,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
+        color: Colors.black,
         border: Border.all(color: TerminalColors.green),
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         onTap: onTap,
-        title: Text(title, style: TerminalTextStyles.heading),
+        title: Text(
+          title,
+          style: TerminalTextStyles.heading,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
-          child: Text(description, style: TerminalTextStyles.muted),
+          child: Text(
+            description,
+            style: TerminalTextStyles.muted,
+          ),
         ),
         trailing: const Icon(
           Icons.arrow_forward_ios,
@@ -38,7 +43,7 @@ class ToolsPage extends StatelessWidget {
     );
   }
 
-  Widget buildInfoPanel() {
+  Widget _buildInfoPanel() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -69,6 +74,15 @@ class ToolsPage extends StatelessWidget {
     );
   }
 
+  void _openMagneticFieldReader(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const EMFReaderPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,21 +95,15 @@ class ToolsPage extends StatelessWidget {
         ),
       ),
       body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          buildInfoPanel(),
-          buildScannerCard(
+          _buildInfoPanel(),
+          _buildScannerCard(
             context: context,
             title: 'Magnetic Field Reader',
             description:
             'Open the live scanner, monitor magnetic changes, and use readings during field reports.',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const EMFReaderPage(),
-                ),
-              );
-            },
+            onTap: () => _openMagneticFieldReader(context),
           ),
         ],
       ),

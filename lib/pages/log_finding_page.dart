@@ -24,7 +24,6 @@ class _LogFindingPageState extends State<LogFindingPage> {
   late final TextEditingController _magneticReadingController;
 
   String _evidenceType = 'Observation';
-  bool _isSubmitting = false;
 
   final List<String> _evidenceTypes = const [
     'Observation',
@@ -49,7 +48,9 @@ class _LogFindingPageState extends State<LogFindingPage> {
     _stateController = TextEditingController(
       text: (data['state'] ?? '').toString(),
     );
-    _notesController = TextEditingController();
+    _notesController = TextEditingController(
+      text: (data['notes'] ?? '').toString(),
+    );
     _magneticReadingController = TextEditingController(
       text: data['magneticReading'] != null
           ? data['magneticReading'].toString()
@@ -72,12 +73,12 @@ class _LogFindingPageState extends State<LogFindingPage> {
     super.dispose();
   }
 
-  void _submit() async {
+  void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    final magneticText = _magneticReadingController.text.trim();
+    final magneticReading =
+    magneticText.isEmpty ? null : double.tryParse(magneticText);
 
     final result = {
       'locationId': widget.initialData?['locationId'],
@@ -86,12 +87,10 @@ class _LogFindingPageState extends State<LogFindingPage> {
       'state': _stateController.text.trim(),
       'notes': _notesController.text.trim(),
       'evidenceType': _evidenceType,
-      'magneticReading': double.tryParse(_magneticReadingController.text.trim()),
+      'magneticReading': magneticReading,
       'latitude': widget.initialData?['latitude'],
       'longitude': widget.initialData?['longitude'],
     };
-
-    if (!mounted) return;
 
     Navigator.pop(context, result);
   }
@@ -205,8 +204,17 @@ class _LogFindingPageState extends State<LogFindingPage> {
                 TextFormField(
                   controller: _magneticReadingController,
                   style: TerminalTextStyles.body,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
                   decoration: _inputDecoration('Magnetic reading (µT)'),
+                  validator: (value) {
+                    final text = value?.trim() ?? '';
+                    if (text.isEmpty) return null;
+                    if (double.tryParse(text) == null) {
+                      return 'Enter a valid numeric reading.';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -231,14 +239,14 @@ class _LogFindingPageState extends State<LogFindingPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submit,
+                    onPressed: _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: TerminalColors.green,
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: Text(
-                      _isSubmitting ? 'Saving...' : 'Save Finding',
+                      'Save Finding',
                       style: TerminalTextStyles.button.copyWith(
                         color: Colors.black,
                       ),

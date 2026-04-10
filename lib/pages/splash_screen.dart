@@ -9,50 +9,72 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late VideoPlayerController _controller;
+  late final VideoPlayerController _controller;
   bool _navigated = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/ghost_animation.mp4')
-      ..initialize().then((_) {
-        debugPrint("✅ Video initialized");
-        setState(() {});
-        _controller.play();
+    _controller = VideoPlayerController.asset('assets/ghost_animation.mp4');
+    _initializeVideo();
+  }
 
-        // Only start listening AFTER it's initialized
-        _controller.addListener(() {
-          if (_controller.value.position >= _controller.value.duration &&
-              !_navigated) {
-            _navigated = true;
-            debugPrint("✅ Video completed, navigating to /auth");
-            Navigator.of(context).pushReplacementNamed('/auth');
-          }
-        });
-      }).catchError((error) {
-        debugPrint("❌ Error initializing video: $error");
-        // Fallback if video fails
-        Navigator.of(context).pushReplacementNamed('/auth');
-      });
+  Future<void> _initializeVideo() async {
+    try {
+      await _controller.initialize();
+
+      if (!mounted) return;
+
+      _controller.addListener(_handleVideoProgress);
+      setState(() {});
+      await _controller.play();
+    } catch (error) {
+      debugPrint('❌ Error initializing video: $error');
+      _goToAuth();
+    }
+  }
+
+  void _handleVideoProgress() {
+    final value = _controller.value;
+
+    if (!value.isInitialized || _navigated) return;
+
+    final isFinished =
+        value.duration > Duration.zero && value.position >= value.duration;
+
+    if (isFinished) {
+      _goToAuth();
+    }
+  }
+
+  void _goToAuth() {
+    if (!mounted || _navigated) return;
+
+    _navigated = true;
+    _controller.removeListener(_handleVideoProgress);
+
+    Navigator.of(context).pushReplacementNamed('/auth');
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_handleVideoProgress);
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isReady = _controller.value.isInitialized;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: _controller.value.isInitialized
+        child: isReady
             ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              )
+          aspectRatio: _controller.value.aspectRatio,
+          child: VideoPlayer(_controller),
+        )
             : const CircularProgressIndicator(),
       ),
     );

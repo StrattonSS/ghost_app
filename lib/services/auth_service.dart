@@ -1,22 +1,29 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  AuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
 
-  // Returns the current user (or null if not logged in)
-  User? getCurrentUser() {
-    return _auth.currentUser;
-  }
+  final FirebaseAuth _auth;
+
+  User? getCurrentUser() => _auth.currentUser;
 
   Future<User?> signIn(String email, String password) async {
     try {
       final result = await _auth.signInWithEmailAndPassword(
-        email: email,
+        email: email.trim(),
         password: password,
       );
       return result.user;
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) {
+        debugPrint('Sign-in error [${e.code}]: ${e.message}');
+      }
+      return null;
     } catch (e) {
-      print('Sign-in error: $e');
+      if (kDebugMode) {
+        debugPrint('Sign-in unexpected error: $e');
+      }
       return null;
     }
   }
@@ -24,12 +31,19 @@ class AuthService {
   Future<User?> register(String email, String password) async {
     try {
       final result = await _auth.createUserWithEmailAndPassword(
-        email: email,
+        email: email.trim(),
         password: password,
       );
       return result.user;
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) {
+        debugPrint('Registration error [${e.code}]: ${e.message}');
+      }
+      return null;
     } catch (e) {
-      print('Registration error: $e');
+      if (kDebugMode) {
+        debugPrint('Registration unexpected error: $e');
+      }
       return null;
     }
   }

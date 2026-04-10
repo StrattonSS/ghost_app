@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../services/journal_service.dart';
-import 'location_detail.dart';
 import 'terminal_theme.dart';
 
 class JournalPage extends StatefulWidget {
@@ -41,7 +40,7 @@ class _JournalPageState extends State<JournalPage>
         .collection('users')
         .doc(userId)
         .collection('favorites')
-        .orderBy('timestamp', descending: true)
+        .orderBy('savedAt', descending: true)
         .snapshots();
   }
 
@@ -102,9 +101,13 @@ class _JournalPageState extends State<JournalPage>
           );
 
           return const Center(
-            child: Text(
-              '>> Failed to load findings.',
-              style: TerminalTextStyles.body,
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                '>> Failed to load findings.',
+                style: TerminalTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
             ),
           );
         }
@@ -184,12 +187,10 @@ class _JournalPageState extends State<JournalPage>
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushNamed(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  LocationDetailPage(locationId: entry.locationId),
-                            ),
+                            '/location_detail',
+                            arguments: entry.locationId,
                           );
                         },
                         child: const Text('Open Location'),
@@ -217,9 +218,13 @@ class _JournalPageState extends State<JournalPage>
           );
 
           return const Center(
-            child: Text(
-              '>> Failed to load saved locations.',
-              style: TerminalTextStyles.body,
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                '>> Failed to load saved locations.',
+                style: TerminalTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
             ),
           );
         }
@@ -234,9 +239,13 @@ class _JournalPageState extends State<JournalPage>
 
         if (docs.isEmpty) {
           return const Center(
-            child: Text(
-              '>> No saved locations found.',
-              style: TerminalTextStyles.body,
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                '>> No saved locations found.\nOpen a location and add it to favorites to keep it here.',
+                style: TerminalTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
             ),
           );
         }
@@ -252,12 +261,10 @@ class _JournalPageState extends State<JournalPage>
               onTap: locationId.isEmpty
                   ? null
                   : () {
-                Navigator.push(
+                Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        LocationDetailPage(locationId: locationId),
-                  ),
+                  '/location_detail',
+                  arguments: locationId,
                 );
               },
               child: _terminalCard(

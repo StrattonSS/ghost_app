@@ -6,7 +6,7 @@ class HauntedLocation {
   final double latitude;
   final double longitude;
 
-  HauntedLocation({
+  const HauntedLocation({
     required this.id,
     required this.name,
     required this.city,
@@ -16,13 +16,45 @@ class HauntedLocation {
   });
 
   factory HauntedLocation.fromMap(String id, Map<String, dynamic> data) {
+    final coordinates = data['coordinates'];
+
     return HauntedLocation(
       id: id,
-      name: data['name'] ?? '',
-      city: data['city'] ?? '',
-      state: data['state'] ?? '',
-      latitude: (data['coordinates']?['lat'] ?? 0).toDouble(),
-      longitude: (data['coordinates']?['lng'] ?? 0).toDouble(),
+      name: (data['name'] ?? '').toString(),
+      city: (data['city'] ?? '').toString(),
+      state: (data['state'] ?? '').toString(),
+      latitude: _parseCoordinate(
+        coordinates is Map ? coordinates['lat'] : null,
+      ),
+      longitude: _parseCoordinate(
+        coordinates is Map ? coordinates['lng'] : null,
+      ),
     );
+  }
+
+  static double _parseCoordinate(dynamic value) {
+    if (value == null) return 0;
+
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    if (value is String) {
+      return double.tryParse(value.trim()) ?? 0;
+    }
+
+    return 0;
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'city': city,
+      'state': state,
+      'coordinates': {
+        'lat': latitude,
+        'lng': longitude,
+      },
+    };
   }
 }

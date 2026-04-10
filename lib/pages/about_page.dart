@@ -22,26 +22,48 @@ class AboutPage extends StatelessWidget {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
-                child: Column(
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      'G.H.O.S.T. - Geolocated Haunting Observation & Survey Tracker',
+                      'G.H.O.S.T.',
                       style: TerminalTextStyles.heading,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Geolocated Haunting Observation & Survey Tracker',
+                      style: TerminalTextStyles.body,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'G.H.O.S.T. helps investigators explore haunted locations, monitor magnetic field changes with their phone, and log field findings in one place.',
+                      style: TerminalTextStyles.body,
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'This app allows you to explore reported paranormal locations, collect ghostly evidence, and rank up on the leaderboard.',
+                      'Core features include location discovery, magnetic field scanning, and a journal for saving observations, spikes, and investigation notes.',
                       style: TerminalTextStyles.body,
                     ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Scanner readings should be used to watch for unusual spikes or repeatable changes, not to treat a baseline reading by itself as evidence.',
+                      style: TerminalTextStyles.muted,
+                    ),
                     SizedBox(height: 24),
-                    Text('Version: 1.0.0', style: TerminalTextStyles.muted),
+                    Text(
+                      'Version: 1.0.0',
+                      style: TerminalTextStyles.muted,
+                    ),
                     SizedBox(height: 8),
-                    Text('Developed by Stratton Software Solutions',
-                        style: TerminalTextStyles.muted),
+                    Text(
+                      'Developed by Stratton Software Solutions',
+                      style: TerminalTextStyles.muted,
+                    ),
                     SizedBox(height: 8),
-                    Text('Support: strattonsoftwaresolutions@gmail.com',
-                        style: TerminalTextStyles.muted),
+                    Text(
+                      'Support: strattonsoftwaresolutions@gmail.com',
+                      style: TerminalTextStyles.muted,
+                    ),
                   ],
                 ),
               ),

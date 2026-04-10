@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ghost_app/pages/log_finding_page.dart';
 import 'package:ghost_app/services/journal_service.dart';
+import 'package:ghost_app/services/leaderboard_service.dart';
 import 'package:ghost_app/services/location_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -72,6 +73,8 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
         isFavorited = favoriteExists;
         isLoading = false;
       });
+
+      await _recordVisit();
     } catch (e, stackTrace) {
       log(
         'Error loading location detail',
@@ -89,10 +92,28 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
     }
   }
 
-  Future<void> addToFavorites() async {
+  Future<void> _recordVisit() async {
+    if (locationData == null) return;
+
+    try {
+      await LeaderboardService.instance.recordUniqueVisit(
+        locationId: widget.locationId,
+        locationData: locationData!,
+      );
+    } catch (e, stackTrace) {
+      log(
+        'Failed to record location visit',
+        error: e,
+        stackTrace: stackTrace,
+        name: 'LocationDetailPage',
+      );
+    }
+  }
+
+  Future<void> toggleFavorite() async {
     final user = _auth.currentUser;
     if (user == null || locationData == null) {
-      _showSnackBar('You must be logged in to save favorites.');
+      _showSnackBar('You must be logged in to manage favorites.');
       return;
     }
 
@@ -102,21 +123,32 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
         .collection('favorites')
         .doc(widget.locationId);
 
-    final newFavorite = {
-      'id': widget.locationId,
-      'name': locationData!['name'] ?? '',
-      'city': locationData!['city'] ?? '',
-      'state': locationData!['state'] ?? '',
-      'type': locationData!['type'] ?? '',
-      'activity': locationData!['activity'] ?? '',
-      'description': locationData!['description'] ?? '',
-      'latitude': locationData!['latitude'],
-      'longitude': locationData!['longitude'],
-      'timestamp': FieldValue.serverTimestamp(),
-    };
-
     try {
-      await favoriteRef.set(newFavorite);
+      if (isFavorited) {
+        await favoriteRef.delete();
+
+        if (!mounted) return;
+
+        setState(() {
+          isFavorited = false;
+        });
+
+        _showSnackBar('Removed from favorites.');
+        return;
+      }
+
+      await favoriteRef.set({
+        'id': widget.locationId,
+        'name': (locationData!['name'] ?? '').toString(),
+        'city': (locationData!['city'] ?? '').toString(),
+        'state': (locationData!['state'] ?? '').toString(),
+        'type': (locationData!['type'] ?? '').toString(),
+        'activity': (locationData!['activity'] ?? '').toString(),
+        'description': (locationData!['description'] ?? '').toString(),
+        'latitude': (locationData!['latitude'] as num?)?.toDouble(),
+        'longitude': (locationData!['longitude'] as num?)?.toDouble(),
+        'savedAt': FieldValue.serverTimestamp(),
+      });
 
       if (!mounted) return;
 
@@ -127,20 +159,20 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
       _showSnackBar('Added to favorites.');
     } catch (e, stackTrace) {
       log(
-        'Failed to add favorite',
+        'Failed to toggle favorite',
         error: e,
         stackTrace: stackTrace,
         name: 'LocationDetailPage',
       );
-      _showSnackBar('Failed to add favorite.');
+      _showSnackBar('Failed to update favorites.');
     }
   }
 
   Future<void> openDirections() async {
     if (locationData == null) return;
 
-    final lat = locationData!['latitude'];
-    final lng = locationData!['longitude'];
+    final lat = (locationData!['latitude'] as num?)?.toDouble();
+    final lng = (locationData!['longitude'] as num?)?.toDouble();
 
     if (lat == null || lng == null) {
       _showSnackBar('This location does not have coordinates yet.');
@@ -188,7 +220,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
         state: (result['state'] ?? '').toString(),
         evidenceType: (result['evidenceType'] ?? 'Observation').toString(),
         notes: (result['notes'] ?? '').toString(),
-        magneticReading: result['magneticReading'] as double?,
+        magneticReading: (result['magneticReading'] as num?)?.toDouble(),
         latitude: (result['latitude'] as num?)?.toDouble(),
         longitude: (result['longitude'] as num?)?.toDouble(),
       );
@@ -271,8 +303,8 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
     }
 
     final location = locationData!;
-    final city = location['city'] ?? 'Unknown City';
-    final state = location['state'] ?? 'Unknown State';
+    final city = (location['city'] ?? 'Unknown City').toString();
+    final state = (location['state'] ?? 'Unknown State').toString();
     final type = location['type'];
     final activity = location['activity'];
     final description = location['description'];
@@ -288,15 +320,15 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("> City: $city"),
-                  Text("> State: $state"),
+                  Text('> City: $city'),
+                  Text('> State: $state'),
                   if (type != null && type.toString().isNotEmpty)
-                    Text("> Type: $type"),
+                    Text('> Type: $type'),
                   if (activity != null && activity.toString().isNotEmpty)
-                    Text("> Activity: $activity"),
+                    Text('> Activity: $activity'),
                   const SizedBox(height: 20),
                   if (description != null && description.toString().isNotEmpty)
-                    Text(description),
+                    Text(description.toString()),
                   const SizedBox(height: 24),
                   buildActionButton(
                     icon: Icons.directions,
@@ -310,12 +342,13 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                     onPressed: startReportFlow,
                   ),
                   const SizedBox(height: 12),
-                  if (!isFavorited)
-                    buildActionButton(
-                      icon: Icons.favorite_border,
-                      label: 'Add to Favorites',
-                      onPressed: addToFavorites,
-                    ),
+                  buildActionButton(
+                    icon: isFavorited ? Icons.favorite : Icons.favorite_border,
+                    label: isFavorited
+                        ? 'Remove from Favorites'
+                        : 'Add to Favorites',
+                    onPressed: toggleFavorite,
+                  ),
                 ],
               ),
             ),
@@ -332,7 +365,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
       appBar: AppBar(
         backgroundColor: TerminalColors.background,
         title: Text(
-          locationData?['name'] ?? 'Location Details',
+          locationData?['name']?.toString() ?? 'Location Details',
           style: TerminalTextStyles.heading,
         ),
       ),
