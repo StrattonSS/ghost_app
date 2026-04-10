@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ghost_app/pages/home_page.dart';
 import 'package:ghost_app/pages/journal_page.dart';
+import 'package:ghost_app/pages/profile_page.dart';
 import 'package:ghost_app/pages/tools_page.dart';
-import 'package:ghost_app/pages/profile_page.dart'; // ✅ Import the real profile screen
 
 class MainScaffold extends StatefulWidget {
-  const MainScaffold({Key? key}) : super(key: key);
+  const MainScaffold({super.key});
 
   @override
   State<MainScaffold> createState() => _MainScaffoldState();
@@ -14,36 +14,49 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
+  late final List<Widget> _pages = [
     const HomePage(),
     const JournalPage(),
     const ToolsPage(),
     const ProfilePage(),
   ];
 
-  final List<BottomNavigationBarItem> _navItems = [
-    const BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Home'),
-    const BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Journal'),
-    const BottomNavigationBarItem(icon: Icon(Icons.build), label: 'Tools'),
-    const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        items: _navItems,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.black,
+        selectedItemColor: Colors.greenAccent,
+        unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        selectedItemColor: Colors.greenAccent,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.black,
-        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.place),
+            label: 'Locations',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
+            label: 'Findings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sensors),
+            label: 'Scanner',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

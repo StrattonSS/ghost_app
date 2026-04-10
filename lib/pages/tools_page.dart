@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 import '../pages/emf_reader_page.dart';
-import '../pages/uv_sensor_page.dart';
-import '../pages/spirit_box_page.dart';
-import '../pages/parabolic_mic_page.dart';
-import '../pages/ghost_camera_page.dart';
-import '../pages/tool_tutorial_page.dart';
 import 'terminal_theme.dart';
 
 class ToolsPage extends StatelessWidget {
-  const ToolsPage({Key? key}) : super(key: key);
+  const ToolsPage({super.key});
 
-  Widget buildToolTile({
+  Widget buildScannerCard({
     required BuildContext context,
     required String title,
     required String description,
     required VoidCallback onTap,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: screenWidth * 0.04,
@@ -30,9 +26,45 @@ class ToolsPage extends StatelessWidget {
         contentPadding: const EdgeInsets.all(16),
         onTap: onTap,
         title: Text(title, style: TerminalTextStyles.heading),
-        subtitle: Text(description, style: TerminalTextStyles.muted),
-        trailing:
-            const Icon(Icons.arrow_forward_ios, color: TerminalColors.green),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(description, style: TerminalTextStyles.muted),
+        ),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          color: TerminalColors.green,
+        ),
+      ),
+    );
+  }
+
+  Widget buildInfoPanel() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: TerminalColors.green),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.black,
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '>> SCANNER_STATUS',
+            style: TerminalTextStyles.heading,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Use your phone magnetometer to monitor magnetic field changes while investigating a haunted location.',
+            style: TerminalTextStyles.body,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'This tool depends on device hardware support and should be treated as a field-use magnetic sensor, not a certified professional EMF instrument.',
+            style: TerminalTextStyles.muted,
+          ),
+        ],
       ),
     );
   }
@@ -43,77 +75,25 @@ class ToolsPage extends StatelessWidget {
       backgroundColor: TerminalColors.background,
       appBar: AppBar(
         backgroundColor: TerminalColors.background,
-        title:
-            const Text(">> TOOLS_SYS.TXT", style: TerminalTextStyles.heading),
+        title: const Text(
+          '>> SCANNER_SYS',
+          style: TerminalTextStyles.heading,
+        ),
       ),
       body: ListView(
         children: [
-          buildToolTile(
+          buildInfoPanel(),
+          buildScannerCard(
             context: context,
-            title: '🛠️ Tool Tutorial',
-            description: 'Try all tools in simulation mode.',
+            title: 'Magnetic Field Reader',
+            description:
+            'Open the live scanner, monitor magnetic changes, and use readings during field reports.',
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const ToolTutorialPage()),
-              );
-            },
-          ),
-          buildToolTile(
-            context: context,
-            title: '📡 EMF Reader',
-            description: 'Detect electromagnetic fluctuations.',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const EMFReaderPage()),
-              );
-            },
-          ),
-          buildToolTile(
-            context: context,
-            title: '🔦 UV Sensor',
-            description: 'Reveal hidden UV clues.',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const UVSensorPage()),
-              );
-            },
-          ),
-          buildToolTile(
-            context: context,
-            title: '📻 Spirit Box',
-            description: 'Listen for spirit voices in static.',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SpiritBoxPage()),
-              );
-            },
-          ),
-          buildToolTile(
-            context: context,
-            title: '🎤 Parabolic Mic',
-            description: 'Capture distant paranormal sounds.',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ParabolicMicPage()),
-              );
-            },
-          ),
-          buildToolTile(
-            context: context,
-            title: '📸 Ghost Camera',
-            description: 'Photograph supernatural entities.',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const GhostCameraPage()),
+                  builder: (_) => const EMFReaderPage(),
+                ),
               );
             },
           ),

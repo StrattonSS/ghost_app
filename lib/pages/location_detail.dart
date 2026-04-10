@@ -1,6 +1,13 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:ghost_app/pages/log_finding_page.dart';
+import 'package:ghost_app/services/journal_service.dart';
+import 'package:ghost_app/services/location_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'terminal_theme.dart';
 
 class LocationDetailPage extends StatefulWidget {
@@ -19,6 +26,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
   Map<String, dynamic>? locationData;
   bool isLoading = true;
   bool isFavorited = false;
+  String? errorMessage;
 
   @override
   void initState() {
@@ -27,12 +35,18 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
   }
 
   Future<void> loadLocation() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
     try {
-      final doc =
-          await _firestore.collection('locations').doc(widget.locationId).get();
+      final location = await LocationService.getLocationById(widget.locationId);
       final user = _auth.currentUser;
 
-      if (doc.exists && user != null) {
+      bool favoriteExists = false;
+
+      if (user != null) {
         final favDoc = await _firestore
             .collection('users')
             .doc(user.uid)
@@ -40,60 +54,275 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
             .doc(widget.locationId)
             .get();
 
+        favoriteExists = favDoc.exists;
+      }
+
+      if (!mounted) return;
+
+      if (location == null) {
         setState(() {
-          locationData = doc.data();
-          isFavorited = favDoc.exists;
+          errorMessage = 'Location not found.';
           isLoading = false;
         });
+        return;
       }
-    } catch (e) {
-      print('Error loading location: $e');
+
+      setState(() {
+        locationData = location;
+        isFavorited = favoriteExists;
+        isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      log(
+        'Error loading location detail',
+        error: e,
+        stackTrace: stackTrace,
+        name: 'LocationDetailPage',
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        errorMessage = 'Failed to load location details.';
+        isLoading = false;
+      });
     }
   }
 
   Future<void> addToFavorites() async {
     final user = _auth.currentUser;
-    if (user == null || locationData == null) return;
-
-    final locationId = widget.locationId;
+    if (user == null || locationData == null) {
+      _showSnackBar('You must be logged in to save favorites.');
+      return;
+    }
 
     final favoriteRef = _firestore
         .collection('users')
         .doc(user.uid)
         .collection('favorites')
-        .doc(locationId);
+        .doc(widget.locationId);
 
     final newFavorite = {
-      'id': locationId,
+      'id': widget.locationId,
       'name': locationData!['name'] ?? '',
       'city': locationData!['city'] ?? '',
       'state': locationData!['state'] ?? '',
       'type': locationData!['type'] ?? '',
       'activity': locationData!['activity'] ?? '',
       'description': locationData!['description'] ?? '',
-      'coordinates': locationData!['coordinates'] ?? '',
+      'latitude': locationData!['latitude'],
+      'longitude': locationData!['longitude'],
       'timestamp': FieldValue.serverTimestamp(),
     };
 
     try {
       await favoriteRef.set(newFavorite);
 
+      if (!mounted) return;
+
       setState(() {
         isFavorited = true;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: TerminalColors.background,
-          content: Text(
-            '>> Added to favorites!',
-            style: TerminalTextStyles.body,
+      _showSnackBar('Added to favorites.');
+    } catch (e, stackTrace) {
+      log(
+        'Failed to add favorite',
+        error: e,
+        stackTrace: stackTrace,
+        name: 'LocationDetailPage',
+      );
+      _showSnackBar('Failed to add favorite.');
+    }
+  }
+
+  Future<void> openDirections() async {
+    if (locationData == null) return;
+
+    final lat = locationData!['latitude'];
+    final lng = locationData!['longitude'];
+
+    if (lat == null || lng == null) {
+      _showSnackBar('This location does not have coordinates yet.');
+      return;
+    }
+
+    final uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+    );
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      _showSnackBar('Could not open map directions.');
+    }
+  }
+
+  Future<void> startReportFlow() async {
+    if (locationData == null) return;
+
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LogFindingPage(
+          initialData: {
+            'locationId': widget.locationId,
+            'locationName': locationData!['name'],
+            'city': locationData!['city'],
+            'state': locationData!['state'],
+            'latitude': locationData!['latitude'],
+            'longitude': locationData!['longitude'],
+            'evidenceType': 'Observation',
+          },
+        ),
+      ),
+    );
+
+    if (result == null) return;
+
+    try {
+      await JournalService.instance.logEntry(
+        locationId: (result['locationId'] ?? widget.locationId).toString(),
+        locationName: (result['locationName'] ?? '').toString(),
+        city: (result['city'] ?? '').toString(),
+        state: (result['state'] ?? '').toString(),
+        evidenceType: (result['evidenceType'] ?? 'Observation').toString(),
+        notes: (result['notes'] ?? '').toString(),
+        magneticReading: result['magneticReading'] as double?,
+        latitude: (result['latitude'] as num?)?.toDouble(),
+        longitude: (result['longitude'] as num?)?.toDouble(),
+      );
+
+      if (!mounted) return;
+      _showSnackBar('Finding saved to your journal.');
+    } catch (e, stackTrace) {
+      log(
+        'Failed to save finding from location detail',
+        error: e,
+        stackTrace: stackTrace,
+        name: 'LocationDetailPage',
+      );
+
+      if (!mounted) return;
+      _showSnackBar('Failed to save finding.');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: TerminalColors.background,
+        content: Text(
+          message,
+          style: TerminalTextStyles.body,
+        ),
+      ),
+    );
+  }
+
+  Widget buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: TerminalColors.green, width: 1.5),
+          foregroundColor: TerminalColors.green,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label, style: TerminalTextStyles.button),
+      ),
+    );
+  }
+
+  Widget buildBody() {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: TerminalColors.green),
+      );
+    }
+
+    if (errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                errorMessage!,
+                style: TerminalTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: loadLocation,
+                child: const Text('Retry'),
+              ),
+            ],
           ),
         ),
       );
-    } catch (e) {
-      print('Failed to favorite: $e');
     }
+
+    final location = locationData!;
+    final city = location['city'] ?? 'Unknown City';
+    final state = location['state'] ?? 'Unknown State';
+    final type = location['type'];
+    final activity = location['activity'];
+    final description = location['description'];
+
+    return SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: DefaultTextStyle(
+              style: TerminalTextStyles.body,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("> City: $city"),
+                  Text("> State: $state"),
+                  if (type != null && type.toString().isNotEmpty)
+                    Text("> Type: $type"),
+                  if (activity != null && activity.toString().isNotEmpty)
+                    Text("> Activity: $activity"),
+                  const SizedBox(height: 20),
+                  if (description != null && description.toString().isNotEmpty)
+                    Text(description),
+                  const SizedBox(height: 24),
+                  buildActionButton(
+                    icon: Icons.directions,
+                    label: 'Get Directions',
+                    onPressed: openDirections,
+                  ),
+                  const SizedBox(height: 12),
+                  buildActionButton(
+                    icon: Icons.edit_note,
+                    label: 'Log Findings',
+                    onPressed: startReportFlow,
+                  ),
+                  const SizedBox(height: 12),
+                  if (!isFavorited)
+                    buildActionButton(
+                      icon: Icons.favorite_border,
+                      label: 'Add to Favorites',
+                      onPressed: addToFavorites,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -103,54 +332,11 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
       appBar: AppBar(
         backgroundColor: TerminalColors.background,
         title: Text(
-          locationData?['name'] ?? 'Loading...',
+          locationData?['name'] ?? 'Location Details',
           style: TerminalTextStyles.heading,
         ),
       ),
-      floatingActionButton: isFavorited
-          ? null
-          : FloatingActionButton.extended(
-              backgroundColor: TerminalColors.background,
-              icon: const Icon(Icons.favorite_border,
-                  color: TerminalColors.green),
-              label: const Text(
-                "Add to Favorites",
-                style: TerminalTextStyles.button,
-              ),
-              onPressed: addToFavorites,
-            ),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: TerminalColors.green),
-            )
-          : SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(minHeight: constraints.maxHeight),
-                    child: DefaultTextStyle(
-                      style: TerminalTextStyles.body,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("> City: ${locationData!['city']}"),
-                          Text("> State: ${locationData!['state']}"),
-                          if (locationData!['type'] != null)
-                            Text("> Type: ${locationData!['type']}"),
-                          if (locationData!['activity'] != null)
-                            Text("> Activity: ${locationData!['activity']}"),
-                          const SizedBox(height: 20),
-                          if (locationData!['description'] != null)
-                            Text(locationData!['description']),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+      body: buildBody(),
     );
   }
 }
